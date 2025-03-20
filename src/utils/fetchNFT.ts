@@ -44,7 +44,11 @@ export const fetchNFT = async (publicKey: PublicKey) => {
             tokenAccount: token.pubkey.toString(),
 
             mintAuthority:
-              mintInfo.value?.data.parsed?.info?.mintAuthority || null,
+              mintInfo.value &&
+              "parsed" in mintInfo.value.data &&
+              mintInfo.value.data.parsed?.info?.mintAuthority
+                ? mintInfo.value.data.parsed.info.mintAuthority
+                : null,
           };
         })
       );

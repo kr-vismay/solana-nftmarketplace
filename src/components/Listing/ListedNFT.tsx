@@ -59,7 +59,14 @@ function ListedNFT() {
       </div>
     ) : (
       <div className="flex flex-col gap-5">
-        {" "}
+        {userSpecificNFT &&
+          userSpecificNFT.length <= 0 &&
+          generalNFT &&
+          generalNFT.length <= 0 && (
+            <div className="text-white text-center text-2xl sm:text-3xl">
+              There is no any listed NFT
+            </div>
+          )}{" "}
         {userSpecificNFT && userSpecificNFT.length > 0 && (
           <MyListedNFT nft={userSpecificNFT} />
         )}

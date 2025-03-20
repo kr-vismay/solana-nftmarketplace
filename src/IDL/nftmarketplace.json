@@ -1,0 +1,106 @@
+{
+  "version": "0.1.0",
+  "name": "nft_market_place",
+  "instructions": [
+    {
+      "name": "initialize",
+      "accounts": [
+        { "name": "signer", "isMut": true, "isSigner": true },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "sellNft",
+      "accounts": [
+        { "name": "signer", "isMut": true, "isSigner": true },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "mint", "isMut": true, "isSigner": false },
+        { "name": "senderTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "amount", "type": "u64" },
+        { "name": "sellPrice", "type": "u64" }
+      ]
+    },
+    {
+      "name": "buyNft",
+      "accounts": [
+        { "name": "buyer", "isMut": true, "isSigner": true },
+        { "name": "owner", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "mint", "isMut": true, "isSigner": false },
+        { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "buyerTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "treasury", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "quantity", "type": "u64" }]
+    },
+    {
+      "name": "cancelListing",
+      "accounts": [
+        { "name": "buyer", "isMut": true, "isSigner": true },
+        { "name": "owner", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "mint", "isMut": true, "isSigner": false },
+        { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "sellerTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [{ "name": "mint", "type": "string" }]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Config",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "authority", "type": "publicKey" },
+          { "name": "pda", "type": "publicKey" },
+          { "name": "nfts", "type": { "vec": { "defined": "Nfts" } } }
+        ]
+      }
+    }
+  ],
+  "types": [
+    {
+      "name": "Nfts",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "price", "type": "u64" },
+          { "name": "quantity", "type": "u64" },
+          { "name": "vaultAccount", "type": "publicKey" },
+          { "name": "mint", "type": "publicKey" }
+        ]
+      }
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "InsufficientFunds",
+      "msg": "Buy amount exceeds the available funds"
+    },
+    {
+      "code": 6001,
+      "name": "NftNotFound",
+      "msg": "NFT not found in seller's inventory"
+    },
+    {
+      "code": 6002,
+      "name": "InsufficientQuantity",
+      "msg": "Insufficient quantity available"
+    },
+    { "code": 6003, "name": "MintMismatch", "msg": "Mint mismatch" },
+    { "code": 6004, "name": "VaultMismatch", "msg": "Vault account mismatch" }
+  ]
+}

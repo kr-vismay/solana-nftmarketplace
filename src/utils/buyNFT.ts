@@ -12,6 +12,7 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
+import { toast } from "react-toastify";
 
 export const buyNft = async (
   mintAddress: string | PublicKey,
@@ -21,7 +22,8 @@ export const buyNft = async (
   connection: Connection,
   wallet: AnchorWallet,
   publicKey: PublicKey,
-  quantity: string
+  quantity: string,
+  price: string
 ) => {
   if (!process.env.NEXT_PUBLIC_PROGRAM_ID) {
     throw Error("Missing required parameters");
@@ -62,9 +64,9 @@ export const buyNft = async (
       const txSignature = await provider.sendAndConfirm(transaction);
     }
     console.log("🚀 ~ TokenCard ~ recipientATA:", recipientATA.toBase58());
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
     const tx = await program.methods
-      .buyNft(new BN(Number(quantity)))
+      .buyNft(new BN(Number(quantity)), new BN(Number(price)))
       .accounts({
         buyer: publicKey,
         owner: new PublicKey(authority),
@@ -77,7 +79,11 @@ export const buyNft = async (
         systemProgram: SystemProgram.programId,
       })
       .rpc({ commitment: "confirmed" });
+    if (tx) {
+      toast.success("NFT bought successfully");
+    }
   } catch (error) {
     console.log(error);
+    toast.error("Something went wrong");
   }
 };

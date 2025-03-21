@@ -116,7 +116,8 @@ function CancelListingModel() {
           tokenATA,
           connection,
           wallet,
-          publicKey
+          publicKey,
+          listedNFTData.price
         );
         setStep(1);
         setIsOpenCancelModel(false);

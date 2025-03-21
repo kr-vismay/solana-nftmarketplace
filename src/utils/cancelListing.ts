@@ -1,8 +1,9 @@
-import { AnchorProvider, Program } from "@project-serum/anchor";
+import { AnchorProvider, BN, Program } from "@project-serum/anchor";
 import IDL from "@/IDL/nftmarketplace.json";
 import { TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { Connection, PublicKey, SystemProgram } from "@solana/web3.js";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
+import { toast } from "react-toastify";
 
 export const cancelListing = async (
   mintAddress: string | PublicKey,
@@ -12,7 +13,8 @@ export const cancelListing = async (
   senderATA: PublicKey,
   connection: Connection,
   wallet: AnchorWallet,
-  publicKey: PublicKey
+  publicKey: PublicKey,
+  price: string
 ) => {
   try {
     if (!process.env.NEXT_PUBLIC_PROGRAM_ID) {
@@ -29,9 +31,8 @@ export const cancelListing = async (
       provider
     );
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const tx = await program.methods
-      .cancelListing(mintAddress.toString())
+      .cancelListing(mintAddress.toString(), new BN(Number(price)))
       .accounts({
         buyer: publicKey,
         owner: new PublicKey(authority),
@@ -44,7 +45,11 @@ export const cancelListing = async (
         systemProgram: SystemProgram.programId,
       })
       .rpc({ commitment: "confirmed" });
+    if (tx) {
+      toast.success("Listing cancelled successfully");
+    }
   } catch (error) {
     console.log(error);
+    toast.error("Something went wrong");
   }
 };

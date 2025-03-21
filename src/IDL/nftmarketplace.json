@@ -40,7 +40,10 @@
         { "name": "tokenProgram", "isMut": false, "isSigner": false },
         { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
-      "args": [{ "name": "quantity", "type": "u64" }]
+      "args": [
+        { "name": "quantity", "type": "u64" },
+        { "name": "price", "type": "u64" }
+      ]
     },
     {
       "name": "cancelListing",
@@ -54,7 +57,10 @@
         { "name": "tokenProgram", "isMut": false, "isSigner": false },
         { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
-      "args": [{ "name": "mint", "type": "string" }]
+      "args": [
+        { "name": "mint", "type": "string" },
+        { "name": "price", "type": "u64" }
+      ]
     }
   ],
   "accounts": [

@@ -101,7 +101,8 @@ function BuyNFTModel() {
           connection,
           wallet,
           publicKey,
-          quantity
+          quantity,
+          listedNFTData.price
         );
         setStep(1);
         setISOpenBuyModel(false);

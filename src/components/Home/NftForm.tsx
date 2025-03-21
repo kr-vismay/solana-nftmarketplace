@@ -34,7 +34,6 @@ import WalletConnectionWarning from "../Wallet/WalletConnectionWarning";
 export default function NFTForm() {
   const { connection } = useConnection();
   const { publicKey, signTransaction } = useWallet();
-  console.log("🚀 ~ NFTForm ~ publicKey:", publicKey);
 
   const [loading, setLoading] = useState(false);
   const [imageUploading, setImageUploading] = useState(false);
@@ -110,7 +109,6 @@ export default function NFTForm() {
           symbol,
           description,
           image,
-          royalties: 5.5,
         });
 
         const metadataResponse = await axios({
@@ -132,7 +130,7 @@ export default function NFTForm() {
     }
   };
 
-  const creatAndmintToken = async () => {
+  const creatAndmintNFT = async () => {
     setLoading(true);
     if (!publicKey || !signTransaction) {
       console.log("Connect your wallet.");
@@ -376,7 +374,7 @@ export default function NFTForm() {
 
           <button
             type="submit"
-            onClick={creatAndmintToken}
+            onClick={creatAndmintNFT}
             disabled={loading || !isFormValid}
             className="w-full px-4 py-3 bg-gradient-to-r from-button-gradient-start to-button-gradient-end text-white font-medium rounded-md flex items-center justify-center focus:outline-none focus:ring-0 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
           >

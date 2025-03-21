@@ -84,7 +84,7 @@ export const sellNft = async (
         tokenProgram: TOKEN_2022_PROGRAM_ID,
         systemProgram: SystemProgram.programId,
       })
-      .rpc({ commitment: "confirmed" });
+      .rpc({ commitment: "confirmed", preflightCommitment: "confirmed" });
     if (tx) {
       toast.success("NFT listed successfully");
     }

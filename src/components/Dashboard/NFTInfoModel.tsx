@@ -36,7 +36,7 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
   );
 
   const [quantity, setQuantity] = useState("1");
-  const [price, setPrice] = useState("0.05");
+  const [price, setPrice] = useState("1");
   const [totalPrice, setTotalPrice] = useState("0");
   const [isValidQuantity, setIsValidQuantity] = useState(true);
   const [isValidPrice, setIsValidPrice] = useState(true);
@@ -48,7 +48,7 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
 
   useEffect(() => {
     setQuantity("1");
-    setPrice("0.05");
+    setPrice("1");
     setTotalPrice("0");
   }, [isOpen]);
 

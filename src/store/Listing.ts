@@ -8,12 +8,14 @@ export interface IMenuActions {
   setISOpenBuyModel: (_value: boolean) => void;
   setListedNFTData: (_value: TListedNFT) => void;
   setIsOpenCancelModel: (_value: boolean) => void;
+  setIsOpenUpdatePriceModel: (_value: boolean) => void;
 }
 
 export interface IMenuValues {
   isOpenBuyModel: boolean;
   listedNFTData: TListedNFT;
   isOpenCancelModel: boolean;
+  isOpenUpdatePriceModel: boolean;
 }
 
 const initialMenuStoreValue: IMenuValues = {
@@ -28,6 +30,7 @@ const initialMenuStoreValue: IMenuValues = {
     symbol: "",
   },
   isOpenCancelModel: false,
+  isOpenUpdatePriceModel: false,
 };
 
 export const useListingStore = create<
@@ -48,6 +51,10 @@ export const useListingStore = create<
       setIsOpenCancelModel: (value: boolean) =>
         set((state) => {
           state.isOpenCancelModel = value;
+        }),
+      setIsOpenUpdatePriceModel: (value: boolean) =>
+        set((state) => {
+          state.isOpenUpdatePriceModel = value;
         }),
     }))
   )

@@ -56,6 +56,12 @@ function ListedNFT() {
         <NFTCardSkeleton />
         <NFTCardSkeleton />
         <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
       </div>
     ) : (
       <div className="flex flex-col gap-5">

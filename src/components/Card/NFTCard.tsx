@@ -22,14 +22,19 @@ function NFTCard({
     useShallow((state) => [state.setISOpen, state.setNFTData])
   );
 
-  const [setISOpenBuyModel, setListedNFTData, setIsOpenCancelModel] =
-    useListingStore(
-      useShallow((state) => [
-        state.setISOpenBuyModel,
-        state.setListedNFTData,
-        state.setIsOpenCancelModel,
-      ])
-    );
+  const [
+    setISOpenBuyModel,
+    setListedNFTData,
+    setIsOpenCancelModel,
+    setIsOpenUpdatePriceModel,
+  ] = useListingStore(
+    useShallow((state) => [
+      state.setISOpenBuyModel,
+      state.setListedNFTData,
+      state.setIsOpenCancelModel,
+      state.setIsOpenUpdatePriceModel,
+    ])
+  );
 
   return (
     <div className=" text-white relative h-[300px] group  rounded-xl hover:cursor-pointer">
@@ -45,9 +50,12 @@ function NFTCard({
           {nft.symbol}
         </Badge>
       </div>
-      <div className="h-[35%] w-[90%] p-3 absolute bg-card-primary left-[5%] right-[5%] shadow-[inset_0px_0px_7px_0px_#d6bcfa] rounded-xl bottom-3">
+      <div
+        className={`${
+          isListedNFT && isMyNFT ? "h-[50%] bottom-1" : "h-[35%] bottom-3"
+        } w-[90%] p-3 absolute bg-card-primary left-[5%] right-[5%] shadow-[inset_0px_0px_7px_0px_#d6bcfa] rounded-xl `}
+      >
         <span className="font-bold text-lg">{nft.name}</span>
-
         <button
           onClick={() => {
             if (isListedNFT && !isMyNFT) {
@@ -69,6 +77,18 @@ function NFTCard({
             ? "Cancel Listing"
             : "Sell NFT"}
         </button>
+
+        {isListedNFT && isMyNFT && (
+          <button
+            className="bg-gradient-to-tr from-light-button-gradient-start to-light-button-gradient-end w-full py-2 rounded-lg mt-2 hover:cursor-pointer"
+            onClick={() => {
+              setListedNFTData(nft as TListedNFT);
+              setIsOpenUpdatePriceModel(true);
+            }}
+          >
+            Update Listing Price
+          </button>
+        )}
       </div>
     </div>
   );

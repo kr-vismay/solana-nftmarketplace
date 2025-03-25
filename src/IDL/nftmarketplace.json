@@ -23,7 +23,7 @@
         { "name": "systemProgram", "isMut": false, "isSigner": false }
       ],
       "args": [
-        { "name": "amount", "type": "u64" },
+        { "name": "quantity", "type": "u64" },
         { "name": "sellPrice", "type": "u64" }
       ]
     },
@@ -60,6 +60,18 @@
       "args": [
         { "name": "mint", "type": "string" },
         { "name": "price", "type": "u64" }
+      ]
+    },
+    {
+      "name": "updatePrice",
+      "accounts": [
+        { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "owner", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": true, "isSigner": false }
+      ],
+      "args": [
+        { "name": "oldPrice", "type": "u64" },
+        { "name": "newPrice", "type": "u64" }
       ]
     }
   ],

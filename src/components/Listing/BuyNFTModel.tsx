@@ -112,6 +112,7 @@ function BuyNFTModel() {
       }
     }
   };
+
   const handleClose = () => {
     setStep(1);
     setISOpenBuyModel(false);

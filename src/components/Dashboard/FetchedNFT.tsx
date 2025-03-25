@@ -43,6 +43,12 @@ function FetchedNFT() {
         <NFTCardSkeleton />
         <NFTCardSkeleton />
         <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
+        <NFTCardSkeleton />
       </div>
     ) : nftData && nftData.length > 0 ? (
       <>

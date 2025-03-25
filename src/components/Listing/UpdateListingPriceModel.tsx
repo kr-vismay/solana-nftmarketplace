@@ -27,25 +27,22 @@ import {
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
-import { cancelListing } from "@/utils/cancelListing";
-import {
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  getAssociatedTokenAddress,
-  TOKEN_2022_PROGRAM_ID,
-} from "@solana/spl-token";
+
+import { updateSellingPrice } from "@/utils/updateSellingPrice";
 import { PublicKey } from "@solana/web3.js";
 
-function CancelListingModel() {
-  const [isOpenCancelModel, setIsOpenCancelModel, listedNFTData] =
+function UpdateListingPriceModel() {
+  const [isOpenUpdatePriceModel, setIsOpenUpdatePriceModel, listedNFTData] =
     useListingStore(
       useShallow((state) => [
-        state.isOpenCancelModel,
-        state.setIsOpenCancelModel,
+        state.isOpenUpdatePriceModel,
+        state.setIsOpenUpdatePriceModel,
         state.listedNFTData,
       ])
     );
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState("1");
+  const [price, setPrice] = useState("");
   const [totalPrice, setTotalPrice] = useState("0");
   const [isValidQuantity, setIsValidQuantity] = useState(true);
   const [isValidPrice, setIsValidPrice] = useState(true);
@@ -55,16 +52,17 @@ function CancelListingModel() {
   const wallet = useAnchorWallet();
   useEffect(() => {
     setQuantity(listedNFTData.quantity.toString());
+    setPrice(listedNFTData.price.toString());
     setTotalPrice("0");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpenCancelModel]);
+  }, [isOpenUpdatePriceModel]);
 
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
     const priceNum = Number.parseFloat(listedNFTData.price.toString()) || 0;
     setTotalPrice((qtyNum * priceNum).toFixed(4));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantity, isOpenCancelModel]);
+  }, [quantity, isOpenUpdatePriceModel]);
 
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
@@ -92,53 +90,43 @@ function CancelListingModel() {
       setLoading(false);
     } else if (step === 2) {
       try {
-        if (
-          !publicKey ||
-          !listedNFTData.pda ||
-          !wallet ||
-          !listedNFTData.authority
-        ) {
+        if (!publicKey || !listedNFTData.pda || !wallet) {
           throw new Error("Invalid wallet or PDA");
         }
-        const tokenATA = await getAssociatedTokenAddress(
-          new PublicKey(listedNFTData.mint),
-          publicKey as PublicKey,
-          false,
-          TOKEN_2022_PROGRAM_ID,
-          ASSOCIATED_TOKEN_PROGRAM_ID
-        );
 
-        await cancelListing(
-          listedNFTData.mint,
-          listedNFTData.pda,
-          listedNFTData.vaultAccount,
-          listedNFTData.authority,
-          tokenATA,
+        await updateSellingPrice(
           connection,
           wallet,
           publicKey,
-          listedNFTData.price
+          new PublicKey(listedNFTData.vaultAccount.toString()),
+          listedNFTData.pda,
+          listedNFTData.price,
+          price
         );
         setStep(1);
-        setIsOpenCancelModel(false);
+        setIsOpenUpdatePriceModel(false);
         setLoading(false);
       } catch (error) {
         console.log(error);
       }
     }
   };
-
   const handleClose = () => {
     setStep(1);
-    setIsOpenCancelModel(false);
+    setIsOpenUpdatePriceModel(false);
   };
-
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === "" || /^\d*\.?\d*$/.test(value)) {
+      setPrice(value);
+    }
+  };
   return (
-    <Dialog open={isOpenCancelModel} onOpenChange={handleClose}>
+    <Dialog open={isOpenUpdatePriceModel} onOpenChange={handleClose}>
       <DialogContent className="bg-gradient-to-br from-card-primary to-card-primary/90 border border-white/10 p-0 text-white rounded-xl overflow-hidden shadow-2xl w-[90vw] max-w-4xl sm:max-w-4xl ">
         <div className="relative flex justify-between items-center p-4 border-b border-white/10 bg-black/20">
           <h2 className="text-xl font-bold">
-            {step === 1 ? "Cancel Listing" : "Confirm Cancellation"}
+            {step === 1 ? "Update Listing Price" : "Confirm Update"}
           </h2>
         </div>
         <div className="flex items-center gap-2 justify-end pr-5">
@@ -191,7 +179,9 @@ function CancelListingModel() {
           <div className="sm:w-3/5 p-5 flex flex-col">
             {step === 1 ? (
               <>
-                <h3 className="text-lg font-semibold mb-4">Cancel Listing</h3>
+                <h3 className="text-lg font-semibold mb-4">
+                  Update Listing Price
+                </h3>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -227,9 +217,9 @@ function CancelListingModel() {
                     <div className="relative">
                       <Input
                         id="price"
-                        disabled={true}
                         type="text"
-                        value={listedNFTData.price.toString()}
+                        value={price}
+                        onChange={handlePriceChange}
                         className={`input-box disabled:opacity-100 ${
                           !isValidPrice && "error-input-box"
                         }`}
@@ -263,7 +253,7 @@ function CancelListingModel() {
             ) : (
               <div className="flex flex-col h-full">
                 <h3 className="text-lg font-semibold mb-4">
-                  Confirm Your Cancellation
+                  Confirm Your Update
                 </h3>
 
                 <div className="bg-black/30 p-4 rounded-lg space-y-3 mb-4">
@@ -291,10 +281,7 @@ function CancelListingModel() {
                 <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg mb-auto">
                   <p className="text-sm text-white/90 flex items-start gap-2">
                     <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    Once your listing cancellation is confirmed, the NFT will be
-                    instantly removed from the marketplace and returned to your
-                    wallet. You will regain full ownership and control over your
-                    asset. Happy collecting!
+                    update price
                   </p>
                 </div>
               </div>
@@ -324,7 +311,7 @@ function CancelListingModel() {
                 ) : (
                   <span className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" />
-                    Confirm cancellation{" "}
+                    Confirm update{" "}
                     {loading && <Loader className="ml-2 animate-spin" />}
                   </span>
                 )}
@@ -337,4 +324,4 @@ function CancelListingModel() {
   );
 }
 
-export default CancelListingModel;
+export default UpdateListingPriceModel;

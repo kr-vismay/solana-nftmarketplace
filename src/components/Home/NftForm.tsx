@@ -366,9 +366,9 @@ export default function NFTForm() {
               name="description"
               value={formData.description}
               onChange={handleChange}
-              placeholder=" "
+              placeholder="description "
               rows={4}
-              className="input-box rounded-md border p-3"
+              className="input-box rounded-md border p-3 min-h-[50px]"
             ></textarea>
           </div>
 

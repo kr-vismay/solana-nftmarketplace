@@ -1,94 +1,91 @@
 "use client";
 import { TNFTData } from "@/types/fetchedNFT";
+import { TListedNFT } from "@/types/listedNFT";
 import Image from "next/image";
 import React from "react";
 
 import { useDashboardMenuStore } from "@/store/Dashboard";
 import { useShallow } from "zustand/shallow";
 import { Badge } from "../ui/badge";
-import { TListedNFT } from "@/types/listedNFT";
 import { useListingStore } from "@/store/Listing";
+import { useRouter } from "next/navigation";
 
 function NFTCard({
+  listedNFT,
   nft,
   isListedNFT,
   isMyNFT,
 }: {
-  nft: TNFTData | TListedNFT;
+  listedNFT?: TListedNFT;
+  nft?: TNFTData;
   isListedNFT: boolean;
   isMyNFT?: boolean;
 }) {
-  const [setIsOpen, setNFTData] = useDashboardMenuStore(
-    useShallow((state) => [state.setISOpen, state.setNFTData])
+  const [setNFTData, setISOpen] = useDashboardMenuStore(
+    useShallow((state) => [state.setNFTData, state.setISOpen])
   );
 
-  const [
-    setISOpenBuyModel,
-    setListedNFTData,
-    setIsOpenCancelModel,
-    setIsOpenUpdatePriceModel,
-  ] = useListingStore(
-    useShallow((state) => [
-      state.setISOpenBuyModel,
-      state.setListedNFTData,
-      state.setIsOpenCancelModel,
-      state.setIsOpenUpdatePriceModel,
-    ])
+  const [setListedNFTData] = useListingStore(
+    useShallow((state) => [state.setListedNFTData])
   );
+
+  const router = useRouter();
+
+  const displayNFT = listedNFT || nft; // Use listedNFT if available, otherwise use nft
 
   return (
-    <div className=" text-white relative h-[300px] group  rounded-xl hover:cursor-pointer">
+    <div className="text-white relative h-[300px] group rounded-xl hover:cursor-pointer">
       <div className="h-[80%] w-full overflow-hidden rounded-xl relative shadow-[0px_2px_18px_0px_#805ad5]">
-        <Image
-          src={nft.image ?? ""}
-          width={500}
-          height={500}
-          alt=""
-          className="w-full h-full object-cover rounded-xl group-hover:scale-125 transition-all duration-500 "
-        />
-        <Badge className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-sm">
-          {nft.symbol}
-        </Badge>
+        {displayNFT ? (
+          <Image
+            src={displayNFT.image ?? ""}
+            width={500}
+            height={500}
+            alt={displayNFT.name ?? "NFT Image"}
+            className="w-full h-full object-cover rounded-xl group-hover:scale-125 transition-all duration-500"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-800 rounded-xl">
+            <span className="text-gray-400">No NFT Available</span>
+          </div>
+        )}
+        {displayNFT && (
+          <Badge className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm text-sm">
+            {displayNFT.symbol ?? "N/A"}
+          </Badge>
+        )}
       </div>
       <div
-        className={`${
-          isListedNFT && isMyNFT ? "h-[50%] bottom-1" : "h-[35%] bottom-3"
-        } w-[90%] p-3 absolute bg-card-primary left-[5%] right-[5%] shadow-[inset_0px_0px_7px_0px_#d6bcfa] rounded-xl `}
+        className={`h-[35%] bottom-3 w-[90%] p-3 absolute bg-card-primary left-[5%] right-[5%] shadow-[inset_0px_0px_7px_0px_#d6bcfa] rounded-xl`}
       >
-        <span className="font-bold text-lg">{nft.name}</span>
+        <span className="font-bold text-lg">
+          {displayNFT?.name ?? "Unknown NFT"}
+        </span>
+
         <button
           onClick={() => {
-            if (isListedNFT && !isMyNFT) {
-              setISOpenBuyModel(true);
-              setListedNFTData(nft as TListedNFT);
-            } else if (isListedNFT && isMyNFT) {
-              setIsOpenCancelModel(true);
-              setListedNFTData(nft as TListedNFT);
-            } else {
-              setIsOpen(true);
-              setNFTData(nft as TNFTData);
+            if (!displayNFT) return; // Prevent errors if no NFT is available
+
+            if (isListedNFT && listedNFT) {
+              setListedNFTData(listedNFT);
+              if (isMyNFT) {
+                router.push(
+                  `/activeListings/${listedNFT.vaultAccount}/${listedNFT.price}`
+                );
+              } else {
+                router.push(
+                  `/discover/${listedNFT.vaultAccount}/${listedNFT.price}`
+                );
+              }
+            } else if (nft) {
+              setNFTData(nft);
+              setISOpen(true);
             }
           }}
           className="bg-gradient-to-tr from-light-button-gradient-start to-light-button-gradient-end w-full py-2 rounded-lg mt-2 hover:cursor-pointer"
         >
-          {isListedNFT && !isMyNFT
-            ? "Buy NFT"
-            : isListedNFT && isMyNFT
-            ? "Cancel Listing"
-            : "Sell NFT"}
+          {isListedNFT ? "Explore NFT" : "Sell NFT"}
         </button>
-
-        {isListedNFT && isMyNFT && (
-          <button
-            className="bg-gradient-to-tr from-light-button-gradient-start to-light-button-gradient-end w-full py-2 rounded-lg mt-2 hover:cursor-pointer"
-            onClick={() => {
-              setListedNFTData(nft as TListedNFT);
-              setIsOpenUpdatePriceModel(true);
-            }}
-          >
-            Update Listing Price
-          </button>
-        )}
       </div>
     </div>
   );

@@ -12,9 +12,15 @@ import { cn } from "@/lib/utils";
 
 function Navbar() {
   const NAVBARdATA = [
-    { id: "1", name: "Create-nft", href: "/" },
-    { id: "2", name: "Dashboard", href: "/dashboard" },
-    { id: "3", name: "Listing", href: "/listing" },
+    { id: "1", name: "Create-nft", href: "/", label: "" },
+    { id: "2", name: "Dashboard", href: "/dashboard", label: "dashboard" },
+    {
+      id: "3",
+      name: "ActiveListings",
+      href: "/activeListings",
+      label: "activeListings",
+    },
+    { id: "4", name: "Discover", href: "/discover", label: "discover" },
   ];
   const [open, setOpen] = useState<boolean>(false);
   const path = usePathname();
@@ -27,13 +33,13 @@ function Navbar() {
           NFT Marketplace
         </span>
       </div>
-      <div className="hidden sm:flex items-center gap-4">
+      <div className="hidden lg:flex items-center gap-4">
         {NAVBARdATA.map((nav) => (
           <Link
             href={nav.href}
             key={nav.id}
-            className={`font-semibold text-lg pb-1.5 rounded-b-md ${
-              path === nav.href
+            className={`font-semibold text-lg  rounded-b-md ${
+              path.split("/")[1] === nav.label
                 ? "border-b-2 text-button-gradient-start border-b-button-gradient-start"
                 : ""
             } `}
@@ -45,7 +51,7 @@ function Navbar() {
       <div className="flex items-center">
         <WalletConnection />
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild className="sm:hidden">
+          <SheetTrigger asChild className="lg:hidden">
             <button className="p-2">
               <Menu className="h-6 w-6" />
             </button>
@@ -68,7 +74,7 @@ function Navbar() {
                     onClick={() => setOpen(false)}
                     className={cn(
                       "font-semibold text-lg py-2 px-4 rounded-md hover:bg-content-hover",
-                      path === nav.href ? "bg-content-hover" : ""
+                      path.split("/")[1] === nav.label ? "bg-content-hover" : ""
                     )}
                   >
                     {nav.name}

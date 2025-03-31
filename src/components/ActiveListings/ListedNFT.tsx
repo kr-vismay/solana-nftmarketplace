@@ -1,7 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import MyListedNFT from "./MyListedNFT";
-import GeneralListedNFT from "./GeneralListedNFT";
+
 import {
   useAnchorWallet,
   useConnection,
@@ -24,8 +24,6 @@ function ListedNFT() {
   const [loading, setLoading] = useState<boolean>(true);
   const [userSpecificNFT, setUserSpecificNFT] = useState<TListedNFT[]>([]);
 
-  const [generalNFT, setGeneralNFT] = useState<TListedNFT[]>([]);
-
   const listedNft = async () => {
     try {
       if (!publicKey || !wallet || !connection) {
@@ -34,7 +32,6 @@ function ListedNFT() {
 
         if (res?.success) {
           setUserSpecificNFT(res?.filteredNFTsForSpecificUser);
-          setGeneralNFT(res?.filteredNFTsForGeneralUser);
           setLoading(false);
         }
       }
@@ -65,20 +62,13 @@ function ListedNFT() {
       </div>
     ) : (
       <div className="flex flex-col gap-5">
-        {userSpecificNFT &&
-          userSpecificNFT.length <= 0 &&
-          generalNFT &&
-          generalNFT.length <= 0 && (
-            <div className="text-white text-center text-2xl sm:text-3xl">
-              There is no any listed NFT
-            </div>
-          )}{" "}
-        {userSpecificNFT && userSpecificNFT.length > 0 && (
+        {userSpecificNFT && userSpecificNFT.length <= 0 ? (
+          <div className="text-white text-center text-2xl sm:text-3xl">
+            There is no any listed NFT
+          </div>
+        ) : (
           <MyListedNFT nft={userSpecificNFT} />
         )}
-        {generalNFT && generalNFT.length > 0 && (
-          <GeneralListedNFT nft={generalNFT} />
-        )}{" "}
       </div>
     )
   ) : (

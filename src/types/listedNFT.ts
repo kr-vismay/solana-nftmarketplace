@@ -1,5 +1,12 @@
 import { PublicKey } from "@solana/web3.js";
 
+export interface TOffer {
+  buyer: PublicKey;
+  buyerTokenAccount: PublicKey;
+  price: string;
+  quantity: string;
+}
+
 export interface TListedNFT {
   price: string;
   quantity: string;
@@ -10,6 +17,7 @@ export interface TListedNFT {
   name?: string;
   image?: string;
   symbol?: string;
+  offers: TOffer[];
 }
 
 interface TAccount {

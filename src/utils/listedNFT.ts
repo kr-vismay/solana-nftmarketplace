@@ -24,7 +24,6 @@ export const listedNFT = async (
 
     const data = (await program.account.config.all()) as TConfig[];
 
-   
     const processNFTs = async (isOwner: boolean) => {
       const filteredNFTs = data
         .filter(

@@ -73,6 +73,63 @@
         { "name": "oldPrice", "type": "u64" },
         { "name": "newPrice", "type": "u64" }
       ]
+    },
+    {
+      "name": "createEscrowFormakeoffer",
+      "accounts": [
+        { "name": "initializer", "isMut": true, "isSigner": true },
+        { "name": "escrowPda", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": []
+    },
+    {
+      "name": "makeOffer",
+      "accounts": [
+        { "name": "buyer", "isMut": true, "isSigner": true },
+        { "name": "escrowPda", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "buyerTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "offerPrice", "type": "u64" },
+        { "name": "quantity", "type": "u64" },
+        { "name": "originalPrice", "type": "u64" }
+      ]
+    },
+    {
+      "name": "acceptOffer",
+      "accounts": [
+        { "name": "seller", "isMut": true, "isSigner": true },
+        { "name": "escrowPda", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "buyerTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "mint", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "offerIndex", "type": "u64" },
+        { "name": "originalPrice", "type": "u64" }
+      ]
+    },
+    {
+      "name": "cancelOffer",
+      "accounts": [
+        { "name": "buyer", "isMut": true, "isSigner": true },
+        { "name": "escrowPda", "isMut": true, "isSigner": false },
+        { "name": "config", "isMut": true, "isSigner": false },
+        { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },
+        { "name": "tokenProgram", "isMut": false, "isSigner": false },
+        { "name": "systemProgram", "isMut": false, "isSigner": false }
+      ],
+      "args": [
+        { "name": "offerIndex", "type": "u64" },
+        { "name": "originalPrice", "type": "u64" }
+      ]
     }
   ],
   "accounts": [
@@ -86,9 +143,22 @@
           { "name": "nfts", "type": { "vec": { "defined": "Nfts" } } }
         ]
       }
-    }
+    },
+    { "name": "Pda", "type": { "kind": "struct", "fields": [] } }
   ],
   "types": [
+    {
+      "name": "Offer",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          { "name": "buyer", "type": "publicKey" },
+          { "name": "buyerTokenAccount", "type": "publicKey" },
+          { "name": "price", "type": "u64" },
+          { "name": "quantity", "type": "u64" }
+        ]
+      }
+    },
     {
       "name": "Nfts",
       "type": {
@@ -97,7 +167,8 @@
           { "name": "price", "type": "u64" },
           { "name": "quantity", "type": "u64" },
           { "name": "vaultAccount", "type": "publicKey" },
-          { "name": "mint", "type": "publicKey" }
+          { "name": "mint", "type": "publicKey" },
+          { "name": "offers", "type": { "vec": { "defined": "Offer" } } }
         ]
       }
     }
@@ -119,6 +190,9 @@
       "msg": "Insufficient quantity available"
     },
     { "code": 6003, "name": "MintMismatch", "msg": "Mint mismatch" },
-    { "code": 6004, "name": "VaultMismatch", "msg": "Vault account mismatch" }
+    { "code": 6004, "name": "VaultMismatch", "msg": "Vault account mismatch" },
+    { "code": 6005, "name": "OfferNotFound", "msg": "Offer not found" },
+    { "code": 6006, "name": "BuyerNotFound", "msg": "Buyer not found" },
+    { "code": 6007, "name": "CalculationFailure", "msg": "CalculationFailure" }
   ]
 }

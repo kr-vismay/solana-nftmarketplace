@@ -16,33 +16,30 @@ import {
   DollarSign,
   Info,
   CheckCircle2,
+  AlertCircle,
   Loader,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 import { useListingStore } from "@/store/Listing";
-
+import { buyNft } from "@/utils/buyNFT";
 import {
   useAnchorWallet,
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
 
-import { updateSellingPrice } from "@/utils/updateSellingPrice";
-import { PublicKey } from "@solana/web3.js";
+function BuyNFTModel({ reFetch }: { reFetch: () => void }) {
+  const [isOpenBuyModel, setISOpenBuyModel, listedNFTData] = useListingStore(
+    useShallow((state) => [
+      state.isOpenBuyModel,
+      state.setISOpenBuyModel,
+      state.listedNFTData,
+    ])
+  );
 
-function UpdateListingPriceModel() {
-  const [isOpenUpdatePriceModel, setIsOpenUpdatePriceModel, listedNFTData] =
-    useListingStore(
-      useShallow((state) => [
-        state.isOpenUpdatePriceModel,
-        state.setIsOpenUpdatePriceModel,
-        state.listedNFTData,
-      ])
-    );
   const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState("1");
-  const [price, setPrice] = useState("");
   const [totalPrice, setTotalPrice] = useState("0");
   const [isValidQuantity, setIsValidQuantity] = useState(true);
   const [isValidPrice, setIsValidPrice] = useState(true);
@@ -52,17 +49,16 @@ function UpdateListingPriceModel() {
   const wallet = useAnchorWallet();
   useEffect(() => {
     setQuantity(listedNFTData.quantity.toString());
-    setPrice(listedNFTData.price.toString());
     setTotalPrice("0");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOpenUpdatePriceModel]);
+  }, [isOpenBuyModel]);
 
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
     const priceNum = Number.parseFloat(listedNFTData.price.toString()) || 0;
     setTotalPrice((qtyNum * priceNum).toFixed(4));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantity, isOpenUpdatePriceModel]);
+  }, [quantity, isOpenBuyModel]);
 
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
@@ -83,50 +79,53 @@ function UpdateListingPriceModel() {
     }
   };
 
-  const handleCancelListing = async () => {
+  const handleBuyNFT = async () => {
     setLoading(true);
     if (step === 1 && isValidQuantity && isValidPrice) {
       setStep(2);
       setLoading(false);
     } else if (step === 2) {
       try {
-        if (!publicKey || !listedNFTData.pda || !wallet) {
+        if (
+          !wallet ||
+          !listedNFTData.authority ||
+          !listedNFTData.pda ||
+          !publicKey
+        ) {
           throw new Error("Invalid wallet or PDA");
         }
-
-        await updateSellingPrice(
+        await buyNft(
+          listedNFTData.mint,
+          listedNFTData.pda,
+          listedNFTData.vaultAccount,
+          listedNFTData.authority,
           connection,
           wallet,
           publicKey,
-          new PublicKey(listedNFTData.vaultAccount.toString()),
-          listedNFTData.pda,
-          listedNFTData.price,
-          price
+          quantity,
+          listedNFTData.price
         );
         setStep(1);
-        setIsOpenUpdatePriceModel(false);
+        reFetch();
+        setISOpenBuyModel(false);
         setLoading(false);
       } catch (error) {
         console.log(error);
       }
     }
   };
+
   const handleClose = () => {
     setStep(1);
-    setIsOpenUpdatePriceModel(false);
+    setISOpenBuyModel(false);
   };
-  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "" || /^\d*\.?\d*$/.test(value)) {
-      setPrice(value);
-    }
-  };
+
   return (
-    <Dialog open={isOpenUpdatePriceModel} onOpenChange={handleClose}>
+    <Dialog open={isOpenBuyModel} onOpenChange={handleClose}>
       <DialogContent className="bg-gradient-to-br from-card-primary to-card-primary/90 border border-white/10 p-0 text-white rounded-xl overflow-hidden shadow-2xl w-[90vw] max-w-4xl sm:max-w-4xl ">
         <div className="relative flex justify-between items-center p-4 border-b border-white/10 bg-black/20">
           <h2 className="text-xl font-bold">
-            {step === 1 ? "Update Listing Price" : "Confirm Update"}
+            {step === 1 ? "Buy NFT" : "Confirm Purchase"}
           </h2>
         </div>
         <div className="flex items-center gap-2 justify-end pr-5">
@@ -179,9 +178,7 @@ function UpdateListingPriceModel() {
           <div className="sm:w-3/5 p-5 flex flex-col">
             {step === 1 ? (
               <>
-                <h3 className="text-lg font-semibold mb-4">
-                  Update Listing Price
-                </h3>
+                <h3 className="text-lg font-semibold mb-4">Buy Details</h3>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -194,16 +191,30 @@ function UpdateListingPriceModel() {
                     <div className="relative">
                       <Input
                         id="quantity"
-                        disabled={true}
                         type="text"
                         value={quantity}
                         onChange={handleQuantityChange}
-                        className={`input-box disabled:opacity-100 ${
+                        className={`input-box ${
                           !isValidQuantity && "error-input-box"
                         }`}
                         placeholder="Enter quantity"
                       />
+                      {!isValidQuantity && (
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                          <AlertCircle className="w-5 h-5 text-red-500" />
+                        </div>
+                      )}
                     </div>
+                    <p className="text-xs text-white/60">
+                      {!isValidQuantity ? (
+                        <span className="text-red-400">
+                          Invalid quantity. Maximum:{" "}
+                          {listedNFTData.quantity.toString()}
+                        </span>
+                      ) : (
+                        `Available: ${listedNFTData.quantity.toString()}`
+                      )}
+                    </p>
                   </div>
 
                   <div className="space-y-2">
@@ -217,9 +228,9 @@ function UpdateListingPriceModel() {
                     <div className="relative">
                       <Input
                         id="price"
+                        disabled={true}
                         type="text"
-                        value={price}
-                        onChange={handlePriceChange}
+                        value={listedNFTData.price.toString()}
                         className={`input-box disabled:opacity-100 ${
                           !isValidPrice && "error-input-box"
                         }`}
@@ -229,6 +240,11 @@ function UpdateListingPriceModel() {
                         SOL
                       </div>
                     </div>
+                    {!isValidPrice && (
+                      <p className="text-xs text-red-400">
+                        Please enter a valid price greater than 0
+                      </p>
+                    )}
                   </div>
 
                   <Separator className="bg-white/10 my-4" />
@@ -253,7 +269,7 @@ function UpdateListingPriceModel() {
             ) : (
               <div className="flex flex-col h-full">
                 <h3 className="text-lg font-semibold mb-4">
-                  Confirm Your Update
+                  Confirm Your Listing
                 </h3>
 
                 <div className="bg-black/30 p-4 rounded-lg space-y-3 mb-4">
@@ -281,7 +297,9 @@ function UpdateListingPriceModel() {
                 <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg mb-auto">
                   <p className="text-sm text-white/90 flex items-start gap-2">
                     <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    update price
+                    Once your purchase is confirmed, the NFT will be instantly
+                    transferred to your wallet. Enjoy full ownership and access
+                    to your newly acquired asset. Happy collecting!
                   </p>
                 </div>
               </div>
@@ -304,14 +322,14 @@ function UpdateListingPriceModel() {
                     "opacity-50 cursor-not-allowed disabled:hover:cursor-not-allowed"
                 )}
                 disabled={!isValidQuantity || !isValidPrice || loading}
-                onClick={handleCancelListing}
+                onClick={handleBuyNFT}
               >
                 {step === 1 ? (
                   "Continue"
                 ) : (
                   <span className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" />
-                    Confirm update{" "}
+                    Confirm Purchase{" "}
                     {loading && <Loader className="ml-2 animate-spin" />}
                   </span>
                 )}
@@ -324,4 +342,4 @@ function UpdateListingPriceModel() {
   );
 }
 
-export default UpdateListingPriceModel;
+export default BuyNFTModel;

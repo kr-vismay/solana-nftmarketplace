@@ -3,7 +3,6 @@
 import type React from "react";
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { useDashboardMenuStore } from "@/store/Dashboard";
 import { useShallow } from "zustand/shallow";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
@@ -21,48 +20,57 @@ import {
   Loader,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { sellNft } from "@/utils/sellNFT";
+
+import { useListingStore } from "@/store/Listing";
+
 import {
-  AnchorWallet,
   useAnchorWallet,
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
-import { PublicKey } from "@solana/web3.js";
-import { createEscrow } from "@/utils/createEscrow";
+import { makeOffer } from "@/utils/makeOffer";
 
-function NFTInfoModal({ refetch }: { refetch: () => void }) {
-  const [isOpen, setIsOpen, NFTData] = useDashboardMenuStore(
-    useShallow((state) => [state.isOpen, state.setISOpen, state.NFTData])
-  );
+function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
+  const [isOpenMakeOfferModel, setIsOpenMakeOfferModel, listedNFTData] =
+    useListingStore(
+      useShallow((state) => [
+        state.isOpenMakeOfferModel,
+        state.setIsOpenMakeOfferModel,
+        state.listedNFTData,
+      ])
+    );
 
+  const [loading, setLoading] = useState(false);
   const [quantity, setQuantity] = useState("1");
   const [price, setPrice] = useState("1");
   const [totalPrice, setTotalPrice] = useState("0");
   const [isValidQuantity, setIsValidQuantity] = useState(true);
   const [isValidPrice, setIsValidPrice] = useState(true);
   const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
+  const { publicKey } = useWallet();
   const { connection } = useConnection();
   const wallet = useAnchorWallet();
-  const { publicKey } = useWallet();
 
   useEffect(() => {
-    setQuantity("1");
+    setQuantity(listedNFTData.quantity.toString());
     setPrice("1");
     setTotalPrice("0");
-  }, [isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpenMakeOfferModel]);
 
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
     const priceNum = Number.parseFloat(price) || 0;
     setTotalPrice((qtyNum * priceNum).toFixed(4));
-  }, [quantity, price, isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [price, quantity, isOpenMakeOfferModel]);
 
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
-    setIsValidQuantity(qtyNum > 0 && qtyNum <= (Number(NFTData?.balance) || 0));
-  }, [quantity, NFTData]);
+    setIsValidQuantity(
+      qtyNum > 0 && qtyNum <= (Number(listedNFTData.quantity.toString()) || 0)
+    );
+  }, [quantity, listedNFTData]);
 
   useEffect(() => {
     const priceNum = Number.parseFloat(price) || 0;
@@ -83,57 +91,52 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
     }
   };
 
-  const handleSellNFT = async () => {
+  const handleMakeOffer = async () => {
     setLoading(true);
     if (step === 1 && isValidQuantity && isValidPrice) {
       setStep(2);
       setLoading(false);
     } else if (step === 2) {
-      await sellNft(
-        connection,
-        wallet as AnchorWallet,
-        publicKey as PublicKey,
-        NFTData?.mintAddress,
-        NFTData?.tokenAccount,
-        quantity,
-        price
-      );
-      setStep(1);
-      setLoading(false);
-      refetch();
-      setIsOpen(false);
+      try {
+        if (
+          !wallet ||
+          !listedNFTData.authority ||
+          !listedNFTData.pda ||
+          !publicKey
+        ) {
+          throw new Error("Invalid wallet or PDA");
+        }
+        await makeOffer(
+          listedNFTData.mint,
+          listedNFTData.pda,
+          listedNFTData.vaultAccount,
+          connection,
+          wallet,
+          publicKey,
+          quantity,
+          price,
+          listedNFTData.price
+        );
+        setStep(1);
+        reFetch();
+        setIsOpenMakeOfferModel(false);
+        setLoading(false);
+      } catch (error) {
+        console.log(error);
+      }
     }
   };
-
-  const handlecreate = async () => {
-    setLoading(true);
-    if (step === 1 && isValidQuantity && isValidPrice) {
-      setStep(2);
-      setLoading(false);
-    } else if (step === 2) {
-      await createEscrow(
-        connection,
-        publicKey as PublicKey,
-        wallet as AnchorWallet
-      );
-      setStep(1);
-      setLoading(false);
-      refetch();
-      setIsOpen(false);
-    }
-  };
-
   const handleClose = () => {
     setStep(1);
-    setIsOpen(false);
+    setIsOpenMakeOfferModel(false);
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={handleClose}>
+    <Dialog open={isOpenMakeOfferModel} onOpenChange={handleClose}>
       <DialogContent className="bg-gradient-to-br from-card-primary to-card-primary/90 border border-white/10 p-0 text-white rounded-xl overflow-hidden shadow-2xl w-[90vw] max-w-4xl sm:max-w-4xl ">
         <div className="relative flex justify-between items-center p-4 border-b border-white/10 bg-black/20">
           <h2 className="text-xl font-bold">
-            {step === 1 ? "Sell Your NFT" : "Confirm Listing"}
+            {step === 1 ? "Make Offer" : "Confirm Offer"}
           </h2>
         </div>
         <div className="flex items-center gap-2 justify-end pr-5">
@@ -155,28 +158,28 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
           <div className="flex flex-col gap-4 sm:border-r border-white/10 p-5 sm:w-2/5">
             <div className="relative">
               <Image
-                src={NFTData.image}
-                alt={NFTData.name || "NFT"}
+                src={listedNFTData.image || ""}
+                alt={listedNFTData.name || "NFT"}
                 width={500}
                 height={500}
                 className="object-cover rounded-xl aspect-square w-full"
               />
               <Badge className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm">
-                {NFTData.symbol}
+                {listedNFTData.symbol}
               </Badge>
             </div>
 
             <h3 className="text-white font-bold text-2xl mt-2 flex items-center gap-2">
-              {NFTData.name}
+              {listedNFTData.name}
             </h3>
 
             <div className="space-y-2 text-sm">
               <div className="flex items-center gap-2 text-white/80">
                 <Wallet className="w-4 h-4" />
                 <span>
-                  Balance:{" "}
+                  Quantity:{" "}
                   <span className="font-bold text-white">
-                    {NFTData.balance}
+                    {listedNFTData.quantity.toString()}
                   </span>
                 </span>
               </div>
@@ -186,7 +189,7 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
           <div className="sm:w-3/5 p-5 flex flex-col">
             {step === 1 ? (
               <>
-                <h3 className="text-lg font-semibold mb-4">Listing Details</h3>
+                <h3 className="text-lg font-semibold mb-4">Offer Details</h3>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -216,10 +219,11 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
                     <p className="text-xs text-white/60">
                       {!isValidQuantity ? (
                         <span className="text-red-400">
-                          Invalid quantity. Maximum: {NFTData.balance}
+                          Invalid quantity. Maximum:{" "}
+                          {listedNFTData.quantity.toString()}
                         </span>
                       ) : (
-                        `Available: ${NFTData.balance}`
+                        `Available: ${listedNFTData.quantity.toString()}`
                       )}
                     </p>
                   </div>
@@ -235,10 +239,10 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
                     <div className="relative">
                       <Input
                         id="price"
+                        onChange={handlePriceChange}
                         type="text"
                         value={price}
-                        onChange={handlePriceChange}
-                        className={`input-box ${
+                        className={`input-box  ${
                           !isValidPrice && "error-input-box"
                         }`}
                         placeholder="Enter price in SOL"
@@ -266,6 +270,7 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
                         </span>
                       </div>
                     </div>
+                    {/* Todo : Fetch SOL Price in USD */}
                     <p className="text-xs text-white/60 mt-1">
                       Estimated value: $
                       {(Number.parseFloat(totalPrice) * 3500).toFixed(2)} USD
@@ -276,13 +281,13 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
             ) : (
               <div className="flex flex-col h-full">
                 <h3 className="text-lg font-semibold mb-4">
-                  Confirm Your Listing
+                  Confirm Your Offer
                 </h3>
 
                 <div className="bg-black/30 p-4 rounded-lg space-y-3 mb-4">
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">NFT</span>
-                    <span className="font-semibold">{NFTData.name}</span>
+                    <span className="font-semibold">{listedNFTData.name}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Quantity</span>
@@ -290,7 +295,9 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Price per NFT</span>
-                    <span className="font-semibold">{price} SOL</span>
+                    <span className="font-semibold">
+                      {listedNFTData.price.toString()} SOL
+                    </span>
                   </div>
                   <Separator className="bg-white/10" />
                   <div className="flex justify-between items-center">
@@ -302,8 +309,9 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
                 <div className="bg-primary/10 border border-primary/20 p-3 rounded-lg mb-auto">
                   <p className="text-sm text-white/90 flex items-start gap-2">
                     <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                    Your NFTs will be listed on the marketplace immediately
-                    after confirmation. You can cancel your listing at any time.
+                    Make an offer for this NFT by locking your SOL securely. If
+                    the seller accepts, the NFT is yours—otherwise, your SOL is
+                    refunded. Place your bid now!
                   </p>
                 </div>
               </div>
@@ -313,7 +321,6 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
               {step === 2 && (
                 <Button
                   variant="outline"
-                  disabled={loading}
                   className="flex-1 border-white/20 bg-outline-button-background hover:bg-outline-button-background hover:text-white text-white hover:cursor-pointer"
                   onClick={() => setStep(1)}
                 >
@@ -327,25 +334,24 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
                     "opacity-50 cursor-not-allowed disabled:hover:cursor-not-allowed"
                 )}
                 disabled={!isValidQuantity || !isValidPrice || loading}
-                onClick={handleSellNFT}
+                onClick={handleMakeOffer}
               >
                 {step === 1 ? (
                   "Continue"
                 ) : (
                   <span className="flex items-center gap-2">
                     <CheckCircle2 className="w-4 h-4" />
-                    Confirm Listing{" "}
-                    {loading && <Loader className="animate-spin ml-2" />}
+                    Confirm Offer{" "}
+                    {loading && <Loader className="ml-2 animate-spin" />}
                   </span>
                 )}
               </Button>
             </div>
           </div>
         </div>
-        <button onClick={handlecreate}>create</button>
       </DialogContent>
     </Dialog>
   );
 }
 
-export default NFTInfoModal;
+export default MakeOfferModel;

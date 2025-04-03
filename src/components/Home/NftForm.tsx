@@ -258,7 +258,7 @@ export default function NFTForm() {
   };
 
   return publicKey ? (
-    <div className="flex w-full max-w-[1300px] mx-auto  rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] relative overflow-hidden ">
+    <div className="flex w-full max-w-[1300px] mx-auto  rounded-lg shadow-[0_3px_10px_rgb(0,0,0,0.2)] relative overflow-hidden mt-5 ">
       <div className=" p-6 w-[100%] md:w-[50%] bg-gradient-to-tr from-[#7e3b9a] via-[#500a76] to-[#955ca8] z-40 ">
         <div className="mb-6">
           <h2 className="text-2xl font-bold mb-2 text-white">NFT Details</h2>

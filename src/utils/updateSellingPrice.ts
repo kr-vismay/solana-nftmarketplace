@@ -5,6 +5,7 @@ import { Connection, PublicKey } from "@solana/web3.js";
 import IDL from "@/IDL/nftmarketplace.json";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { toast } from "react-toastify";
+
 export const updateSellingPrice = async (
   connection: Connection,
   wallet: AnchorWallet,
@@ -45,9 +46,19 @@ export const updateSellingPrice = async (
       .rpc({ commitment: "confirmed", preflightCommitment: "confirmed" });
     if (tx) {
       toast.success("Updated successfully");
+      return {
+        success: true,
+      };
+    } else {
+      return {
+        success: false,
+      };
     }
   } catch (error) {
     console.log(error);
     toast.error("Something went wrong");
+    return {
+      success: false,
+    };
   }
 };

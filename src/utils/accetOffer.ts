@@ -17,7 +17,8 @@ export const acceptOffer = async (
   price: string,
   offerIndex: number,
   Offers: TOffer[],
-  buyer: PublicKey
+  buyer: PublicKey,
+  reFetch: () => void
 ) => {
   if (
     !connection ||
@@ -33,7 +34,7 @@ export const acceptOffer = async (
   );
 
   const [escrow] = findProgramAddressSync(
-    [],
+    [Buffer.from("escrow", "utf-8"), publicKey.toBuffer()],
     new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID)
   );
   try {
@@ -74,6 +75,7 @@ export const acceptOffer = async (
       .rpc({ commitment: "confirmed", preflightCommitment: "confirmed" });
     if (tx) {
       toast.success("Offer Accepted");
+      reFetch();
     }
   } catch (error) {
     console.log(error);

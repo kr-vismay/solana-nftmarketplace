@@ -14,7 +14,7 @@ export interface IMenuActions {
 
 export interface IMenuValues {
   isOpenBuyModel: boolean;
-  listedNFTData: TListedNFT;
+  listedNFTData: TListedNFT | null;
   isOpenCancelModel: boolean;
   isOpenUpdatePriceModel: boolean;
   isOpenMakeOfferModel: boolean;
@@ -22,16 +22,7 @@ export interface IMenuValues {
 
 const initialMenuStoreValue: IMenuValues = {
   isOpenBuyModel: false,
-  listedNFTData: {
-    price: "",
-    quantity: "",
-    vaultAccount: "",
-    mint: "",
-    name: "",
-    image: "",
-    symbol: "",
-    offers: [],
-  },
+  listedNFTData: null,
   isOpenCancelModel: false,
   isOpenUpdatePriceModel: false,
   isOpenMakeOfferModel: false,
@@ -67,3 +58,5 @@ export const useListingStore = create<
     }))
   )
 );
+
+useListingStore.subscribe((state) => console.log(state));

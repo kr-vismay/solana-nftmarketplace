@@ -36,7 +36,7 @@ function FetchedNFT() {
   }, [publicKey]);
   return publicKey ? (
     loading ? (
-      <div className="grid md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-8 py-3">
+      <div className="grid md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-8 py-3 mt-5">
         <NFTCardSkeleton />
         <NFTCardSkeleton />
         <NFTCardSkeleton />
@@ -51,11 +51,11 @@ function FetchedNFT() {
         <NFTCardSkeleton />
       </div>
     ) : nftData && nftData.length > 0 ? (
-      <>
+      <div className="mt-5">
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>
         <NFTInfoModal refetch={fetchNFTData} />
 
-        <div className="grid md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-8 py-3">
+        <div className="grid md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-8 py-3 mt-3">
           {nftData.map((nft: TNFTData) => (
             <NFTCard
               isListedNFT={false}
@@ -64,9 +64,9 @@ function FetchedNFT() {
             />
           ))}
         </div>
-      </>
+      </div>
     ) : (
-      <div className="text-white flex justify-center items-center gap-6 flex-col">
+      <div className="text-white flex justify-center items-center gap-6 flex-col mt-5">
         <div className=" font-bold text-2xl sm:text-3xl text-center">
           There is no NFT in your wallet
         </div>

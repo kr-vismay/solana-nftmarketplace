@@ -10,15 +10,17 @@ import Link from "next/link";
 import React from "react";
 import { toast } from "react-toastify";
 import { useShallow } from "zustand/shallow";
+import NFTDetailsSkeleton from "./NFTDetailsSkeleton";
+import NoNFTfound from "@/components/Card/NoNFTfound";
 
 function NFTdetails({
   isMyNFT,
   loading,
+  isEmpty,
 }: {
-  price: string;
-  vault: string;
   isMyNFT: boolean;
   loading: boolean;
+  isEmpty: boolean;
 }) {
   const { copied, copyToClipboard } = useCopyToClipboard();
 
@@ -40,14 +42,10 @@ function NFTdetails({
     ])
   );
 
-  const isAnyFieldEmpty = Object.values(listedNFTData).some(
-    (value) => value === ""
-  );
-
-  return loading ? (
-    <div className="p-4">loading</div>
-  ) : isAnyFieldEmpty ? (
-    <div className="text-center text-white">No NFT found</div>
+  return loading || listedNFTData === null ? (
+    <NFTDetailsSkeleton />
+  ) : isEmpty ? (
+    <NoNFTfound />
   ) : (
     <div className="sm:p-4 ">
       <div className="flex lg:flex-row flex-col  bg-gradient-to-br from-card-primary to-card-primary/90 border border-white/10  text-white rounded-xl md:p-6 p-4 gap-4 shadow-[inset_0px_0px_7px_0px_#d6bcfa]">

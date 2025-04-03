@@ -11,7 +11,7 @@ import {
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
-import { initializeUser } from "./initializeUser";
+
 import IDL from "@/IDL/nftmarketplace.json";
 import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { toast } from "react-toastify";
@@ -37,7 +37,6 @@ export const sellNft = async (
     new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID)
   );
   try {
-    await initializeUser(connection, publicKey, wallet);
     const provider = new AnchorProvider(connection, wallet, {
       commitment: "confirmed",
     });

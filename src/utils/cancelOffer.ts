@@ -12,8 +12,10 @@ export const cancelOffer = async (
   publicKey: PublicKey,
   config: PublicKey,
   vaultTokenAccount: PublicKey,
+  authority: string | PublicKey,
   price: string,
-  offerIndex: number
+  offerIndex: number,
+  reFetch: () => void
 ) => {
   if (
     !connection ||
@@ -25,7 +27,7 @@ export const cancelOffer = async (
   }
 
   const [escrow] = findProgramAddressSync(
-    [],
+    [Buffer.from("escrow", "utf-8"), new PublicKey(authority).toBuffer()],
     new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID)
   );
   try {
@@ -53,6 +55,7 @@ export const cancelOffer = async (
       .rpc({ commitment: "confirmed", preflightCommitment: "confirmed" });
     if (tx) {
       toast.success("Offer Cancelled");
+      reFetch();
     }
   } catch (error) {
     console.log(error);

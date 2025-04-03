@@ -19,10 +19,10 @@ export const createEscrow = async (
   }
 
   const [escrow] = findProgramAddressSync(
-    [],
+    [Buffer.from("escrow", "utf-8"), publicKey.toBuffer()],
     new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID)
   );
-  console.log("🚀 ~ escrow:", escrow);
+
   const provider = new AnchorProvider(connection, wallet, {
     commitment: "confirmed",
   });

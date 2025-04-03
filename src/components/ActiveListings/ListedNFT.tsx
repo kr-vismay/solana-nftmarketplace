@@ -13,6 +13,7 @@ import { useListingStore } from "@/store/Listing";
 import { useShallow } from "zustand/shallow";
 import WalletConnectionWarning from "../Wallet/WalletConnectionWarning";
 import NFTCardSkeleton from "../Card/NFTCardSkeleton";
+import NoNFTfound from "../Card/NoNFTfound";
 
 function ListedNFT() {
   const { connection } = useConnection();
@@ -46,7 +47,7 @@ function ListedNFT() {
   }, [publicKey, isOpenBuyModel, isOpenCancelModel]);
   return publicKey ? (
     loading ? (
-      <div className="grid md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-8 py-3">
+      <div className="grid md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-8 py-3 mt-5">
         <NFTCardSkeleton />
         <NFTCardSkeleton />
         <NFTCardSkeleton />
@@ -61,11 +62,9 @@ function ListedNFT() {
         <NFTCardSkeleton />
       </div>
     ) : (
-      <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-5 mt-5">
         {userSpecificNFT && userSpecificNFT.length <= 0 ? (
-          <div className="text-white text-center text-2xl sm:text-3xl">
-            There is no any listed NFT
-          </div>
+          <NoNFTfound />
         ) : (
           <MyListedNFT nft={userSpecificNFT} />
         )}

@@ -35,7 +35,7 @@ import {
 } from "@solana/spl-token";
 import { PublicKey } from "@solana/web3.js";
 
-function CancelListingModel() {
+function CancelListingModel({ reFetch }: { reFetch: () => void }) {
   const [isOpenCancelModel, setIsOpenCancelModel, listedNFTData] =
     useListingStore(
       useShallow((state) => [
@@ -54,14 +54,16 @@ function CancelListingModel() {
   const { connection } = useConnection();
   const wallet = useAnchorWallet();
   useEffect(() => {
-    setQuantity(listedNFTData.quantity.toString());
+    setQuantity(listedNFTData ? listedNFTData.quantity.toString() : "0");
     setTotalPrice("0");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpenCancelModel]);
 
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
-    const priceNum = Number.parseFloat(listedNFTData.price.toString()) || 0;
+    const priceNum =
+      Number.parseFloat(listedNFTData ? listedNFTData.price.toString() : "0") ||
+      0;
     setTotalPrice((qtyNum * priceNum).toFixed(4));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quantity, isOpenCancelModel]);
@@ -69,14 +71,19 @@ function CancelListingModel() {
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
     setIsValidQuantity(
-      qtyNum > 0 && qtyNum <= (Number(listedNFTData.quantity.toString()) || 0)
+      qtyNum > 0 &&
+        qtyNum <=
+          (Number(listedNFTData ? listedNFTData.quantity.toString() : "0") || 0)
     );
   }, [quantity, listedNFTData]);
 
   useEffect(() => {
-    const priceNum = Number.parseFloat(listedNFTData.price.toString()) || 0;
+    const priceNum =
+      Number.parseFloat(listedNFTData ? listedNFTData.price.toString() : "0") ||
+      0;
     setIsValidPrice(priceNum > 0);
-  }, [listedNFTData.price]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [listedNFTData?.price]);
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -94,6 +101,7 @@ function CancelListingModel() {
       try {
         if (
           !publicKey ||
+          !listedNFTData ||
           !listedNFTData.pda ||
           !wallet ||
           !listedNFTData.authority
@@ -117,7 +125,9 @@ function CancelListingModel() {
           connection,
           wallet,
           publicKey,
-          listedNFTData.price
+          listedNFTData.price,
+          listedNFTData.offers,
+          reFetch
         );
         setStep(1);
         setIsOpenCancelModel(false);
@@ -160,19 +170,19 @@ function CancelListingModel() {
           <div className="flex flex-col gap-4 sm:border-r border-white/10 p-5 sm:w-2/5">
             <div className="relative">
               <Image
-                src={listedNFTData.image || ""}
-                alt={listedNFTData.name || "NFT"}
+                src={listedNFTData?.image || ""}
+                alt={listedNFTData?.name || "NFT"}
                 width={500}
                 height={500}
                 className="object-cover rounded-xl aspect-square w-full"
               />
               <Badge className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm">
-                {listedNFTData.symbol}
+                {listedNFTData?.symbol}
               </Badge>
             </div>
 
             <h3 className="text-white font-bold text-2xl mt-2 flex items-center gap-2">
-              {listedNFTData.name}
+              {listedNFTData?.name}
             </h3>
 
             <div className="space-y-2 text-sm">
@@ -181,7 +191,7 @@ function CancelListingModel() {
                 <span>
                   Quantity:{" "}
                   <span className="font-bold text-white">
-                    {listedNFTData.quantity.toString()}
+                    {listedNFTData?.quantity.toString()}
                   </span>
                 </span>
               </div>
@@ -229,7 +239,7 @@ function CancelListingModel() {
                         id="price"
                         disabled={true}
                         type="text"
-                        value={listedNFTData.price.toString()}
+                        value={listedNFTData?.price.toString()}
                         className={`input-box disabled:opacity-100 ${
                           !isValidPrice && "error-input-box"
                         }`}
@@ -269,7 +279,7 @@ function CancelListingModel() {
                 <div className="bg-black/30 p-4 rounded-lg space-y-3 mb-4">
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">NFT</span>
-                    <span className="font-semibold">{listedNFTData.name}</span>
+                    <span className="font-semibold">{listedNFTData?.name}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Quantity</span>
@@ -278,7 +288,7 @@ function CancelListingModel() {
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Price per NFT</span>
                     <span className="font-semibold">
-                      {listedNFTData.price.toString()} SOL
+                      {listedNFTData?.price.toString()} SOL
                     </span>
                   </div>
                   <Separator className="bg-white/10" />

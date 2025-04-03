@@ -19,12 +19,14 @@ export const makeOffer = async (
   mintAddress: string | PublicKey,
   pda: string | PublicKey,
   vault: string | PublicKey,
+  authority: string | PublicKey,
   connection: Connection,
   wallet: AnchorWallet,
   publicKey: PublicKey,
   quantity: string,
   offerPrice: string,
-  originalPrice: string
+  originalPrice: string,
+  reFetch: () => void
 ) => {
   if (!process.env.NEXT_PUBLIC_PROGRAM_ID) {
     throw Error("Missing required parameters");
@@ -41,7 +43,7 @@ export const makeOffer = async (
       provider
     );
     const [escrow] = findProgramAddressSync(
-      [],
+      [Buffer.from("escrow", "utf-8"), new PublicKey(authority).toBuffer()],
       new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID)
     );
 
@@ -86,6 +88,7 @@ export const makeOffer = async (
       .rpc({ commitment: "confirmed" });
     if (tx) {
       toast.success("Offer Created");
+      reFetch();
     }
   } catch (error) {
     console.log(error);

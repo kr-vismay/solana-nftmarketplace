@@ -1,7 +1,8 @@
 import SingleNFTDetails from "@/components/ActiveListings/SingleNFT/SingleNFTDetails";
 import React from "react";
 
-function page({ params }: { params: { vault: string; price: string } }) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function page({ params }: { params: any }) {
   const { price, vault } = params;
 
   return <SingleNFTDetails price={price} vault={vault} isMyNFT={true} />;

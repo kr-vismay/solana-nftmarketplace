@@ -32,6 +32,7 @@
       "accounts": [
         { "name": "buyer", "isMut": true, "isSigner": true },
         { "name": "owner", "isMut": true, "isSigner": false },
+        { "name": "escrowPda", "isMut": true, "isSigner": false },
         { "name": "config", "isMut": true, "isSigner": false },
         { "name": "mint", "isMut": true, "isSigner": false },
         { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },
@@ -50,6 +51,7 @@
       "accounts": [
         { "name": "buyer", "isMut": true, "isSigner": true },
         { "name": "owner", "isMut": true, "isSigner": false },
+        { "name": "escrowPda", "isMut": true, "isSigner": false },
         { "name": "config", "isMut": true, "isSigner": false },
         { "name": "mint", "isMut": true, "isSigner": false },
         { "name": "vaultTokenAccount", "isMut": true, "isSigner": false },

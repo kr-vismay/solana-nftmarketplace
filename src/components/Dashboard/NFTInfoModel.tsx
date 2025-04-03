@@ -30,6 +30,9 @@ import {
 } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { createEscrow } from "@/utils/createEscrow";
+import { findProgramAddressSync } from "@project-serum/anchor/dist/cjs/utils/pubkey";
+import { initializeUser } from "@/utils/initializeUser";
+import { toast } from "react-toastify";
 
 function NFTInfoModal({ refetch }: { refetch: () => void }) {
   const [isOpen, setIsOpen, NFTData] = useDashboardMenuStore(
@@ -62,12 +65,12 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
     setIsValidQuantity(qtyNum > 0 && qtyNum <= (Number(NFTData?.balance) || 0));
-  }, [quantity, NFTData]);
+  }, [quantity, NFTData, step]);
 
   useEffect(() => {
     const priceNum = Number.parseFloat(price) || 0;
     setIsValidPrice(priceNum > 0);
-  }, [price]);
+  }, [price, step]);
 
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -83,12 +86,61 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
     }
   };
 
+  const checkIntialization = async () => {
+    if (!publicKey || !connection || !process.env.NEXT_PUBLIC_PROGRAM_ID)
+      return;
+    const [escrow] = findProgramAddressSync(
+      [Buffer.from("escrow", "utf-8"), publicKey.toBuffer()],
+      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID)
+    );
+
+    const [pda] = findProgramAddressSync(
+      [Buffer.from("config", "utf-8"), publicKey.toBuffer()],
+      new PublicKey(process.env.NEXT_PUBLIC_PROGRAM_ID)
+    );
+
+    const isUserInitializedPDA = await connection.getAccountInfo(pda);
+    const isUserInitializedEscrow = await connection.getAccountInfo(escrow);
+
+    if (isUserInitializedEscrow && isUserInitializedPDA) {
+      setStep(2);
+    }
+  };
+
+  useEffect(() => {
+    checkIntialization();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicKey, connection, isOpen]);
+
+  const handleInitialize = async () => {
+    try {
+      setLoading(true);
+      await initializeUser(
+        connection,
+        publicKey as PublicKey,
+        wallet as AnchorWallet
+      );
+      await createEscrow(
+        connection,
+        publicKey as PublicKey,
+        wallet as AnchorWallet
+      );
+      setStep(2);
+      toast.success("User initialized successfully");
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong while initializing user");
+      setLoading(false);
+    }
+  };
+
   const handleSellNFT = async () => {
     setLoading(true);
-    if (step === 1 && isValidQuantity && isValidPrice) {
-      setStep(2);
+    if (step === 2 && isValidQuantity && isValidPrice) {
+      setStep(3);
       setLoading(false);
-    } else if (step === 2) {
+    } else if (step === 3) {
       await sellNft(
         connection,
         wallet as AnchorWallet,
@@ -97,24 +149,6 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
         NFTData?.tokenAccount,
         quantity,
         price
-      );
-      setStep(1);
-      setLoading(false);
-      refetch();
-      setIsOpen(false);
-    }
-  };
-
-  const handlecreate = async () => {
-    setLoading(true);
-    if (step === 1 && isValidQuantity && isValidPrice) {
-      setStep(2);
-      setLoading(false);
-    } else if (step === 2) {
-      await createEscrow(
-        connection,
-        publicKey as PublicKey,
-        wallet as AnchorWallet
       );
       setStep(1);
       setLoading(false);
@@ -133,7 +167,11 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
       <DialogContent className="bg-gradient-to-br from-card-primary to-card-primary/90 border border-white/10 p-0 text-white rounded-xl overflow-hidden shadow-2xl w-[90vw] max-w-4xl sm:max-w-4xl ">
         <div className="relative flex justify-between items-center p-4 border-b border-white/10 bg-black/20">
           <h2 className="text-xl font-bold">
-            {step === 1 ? "Sell Your NFT" : "Confirm Listing"}
+            {step === 1
+              ? "Initialize Account"
+              : step === 2
+              ? "Sell Your NFT"
+              : "Confirm Listing"}
           </h2>
         </div>
         <div className="flex items-center gap-2 justify-end pr-5">
@@ -149,6 +187,13 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
             className="bg-selected-content text-white"
           >
             2
+          </Badge>
+          <ArrowRight className="w-4 h-4 text-white/50" />
+          <Badge
+            variant={step === 3 ? "outline" : "default"}
+            className="bg-selected-content text-white"
+          >
+            3
           </Badge>
         </div>
         <div className="relative flex sm:flex-row flex-col w-full h-[470px] overflow-auto mb-4">
@@ -185,6 +230,17 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
 
           <div className="sm:w-3/5 p-5 flex flex-col">
             {step === 1 ? (
+              <>
+                <h3 className="text-lg font-semibold mb-4">
+                  Initialize your account
+                </h3>
+                <div className="mt-4 bg-black/30 p-4 rounded-lg">
+                  Initialize your account to start selling NFTs. This process is
+                  quick and easy. Once your account is initialized, you can
+                  start listing your NFTs for sale.
+                </div>
+              </>
+            ) : step === 2 ? (
               <>
                 <h3 className="text-lg font-semibold mb-4">Listing Details</h3>
 
@@ -310,7 +366,7 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
             )}
 
             <div className="mt-6 flex gap-3">
-              {step === 2 && (
+              {step === 3 && (
                 <Button
                   variant="outline"
                   disabled={loading}
@@ -320,29 +376,46 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
                   Back
                 </Button>
               )}
-              <Button
-                className={cn(
-                  "flex-1 bg-gradient-to-r from-light-button-gradient-start to-light-button-gradient-end hover:opacity-90 transition-all hover:cursor-pointer ",
-                  (!isValidQuantity || !isValidPrice) &&
-                    "opacity-50 cursor-not-allowed disabled:hover:cursor-not-allowed"
-                )}
-                disabled={!isValidQuantity || !isValidPrice || loading}
-                onClick={handleSellNFT}
-              >
-                {step === 1 ? (
-                  "Continue"
-                ) : (
+              {step === 1 && (
+                <Button
+                  onClick={handleInitialize}
+                  className={cn(
+                    " flex-1 bg-gradient-to-r from-light-button-gradient-start to-light-button-gradient-end hover:opacity-90  transition-all hover:cursor-pointer ",
+                    loading &&
+                      "opacity-50 cursor-not-allowed disabled:hover:cursor-not-allowed"
+                  )}
+                  disabled={loading}
+                >
                   <span className="flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4" />
-                    Confirm Listing{" "}
+                    Initialize Account
                     {loading && <Loader className="animate-spin ml-2" />}
                   </span>
-                )}
-              </Button>
+                </Button>
+              )}
+              {step !== 1 && (
+                <Button
+                  className={cn(
+                    "flex-1 bg-gradient-to-r from-light-button-gradient-start to-light-button-gradient-end hover:opacity-90 transition-all hover:cursor-pointer ",
+                    (!isValidQuantity || !isValidPrice) &&
+                      "opacity-50 cursor-not-allowed disabled:hover:cursor-not-allowed"
+                  )}
+                  disabled={!isValidQuantity || !isValidPrice || loading}
+                  onClick={handleSellNFT}
+                >
+                  {step === 2 ? (
+                    "Continue"
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <CheckCircle2 className="w-4 h-4" />
+                      Confirm Listing{" "}
+                      {loading && <Loader className="animate-spin ml-2" />}
+                    </span>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
         </div>
-        <button onClick={handlecreate}>create</button>
       </DialogContent>
     </Dialog>
   );

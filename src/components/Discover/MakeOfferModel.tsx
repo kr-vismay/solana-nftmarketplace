@@ -52,7 +52,7 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
   const wallet = useAnchorWallet();
 
   useEffect(() => {
-    setQuantity(listedNFTData.quantity.toString());
+    setQuantity(listedNFTData ? listedNFTData.quantity.toString() : "0");
     setPrice("1");
     setTotalPrice("0");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -62,13 +62,12 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
     const qtyNum = Number.parseFloat(quantity) || 0;
     const priceNum = Number.parseFloat(price) || 0;
     setTotalPrice((qtyNum * priceNum).toFixed(4));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [price, quantity, isOpenMakeOfferModel]);
 
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
     setIsValidQuantity(
-      qtyNum > 0 && qtyNum <= (Number(listedNFTData.quantity.toString()) || 0)
+      qtyNum > 0 && qtyNum <= (Number(listedNFTData?.quantity.toString()) || 0)
     );
   }, [quantity, listedNFTData]);
 
@@ -100,25 +99,30 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
       try {
         if (
           !wallet ||
+          !listedNFTData ||
           !listedNFTData.authority ||
           !listedNFTData.pda ||
           !publicKey
         ) {
           throw new Error("Invalid wallet or PDA");
         }
+        console.log(listedNFTData.authority.toBase58());
+
         await makeOffer(
           listedNFTData.mint,
           listedNFTData.pda,
           listedNFTData.vaultAccount,
+          listedNFTData.authority,
           connection,
           wallet,
           publicKey,
           quantity,
           price,
-          listedNFTData.price
+          listedNFTData.price,
+          reFetch
         );
         setStep(1);
-        reFetch();
+
         setIsOpenMakeOfferModel(false);
         setLoading(false);
       } catch (error) {
@@ -158,19 +162,19 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
           <div className="flex flex-col gap-4 sm:border-r border-white/10 p-5 sm:w-2/5">
             <div className="relative">
               <Image
-                src={listedNFTData.image || ""}
-                alt={listedNFTData.name || "NFT"}
+                src={listedNFTData?.image || ""}
+                alt={listedNFTData?.name || "NFT"}
                 width={500}
                 height={500}
                 className="object-cover rounded-xl aspect-square w-full"
               />
               <Badge className="absolute top-2 right-2 bg-black/60 backdrop-blur-sm">
-                {listedNFTData.symbol}
+                {listedNFTData?.symbol}
               </Badge>
             </div>
 
             <h3 className="text-white font-bold text-2xl mt-2 flex items-center gap-2">
-              {listedNFTData.name}
+              {listedNFTData?.name}
             </h3>
 
             <div className="space-y-2 text-sm">
@@ -179,7 +183,7 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
                 <span>
                   Quantity:{" "}
                   <span className="font-bold text-white">
-                    {listedNFTData.quantity.toString()}
+                    {listedNFTData?.quantity.toString()}
                   </span>
                 </span>
               </div>
@@ -220,10 +224,10 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
                       {!isValidQuantity ? (
                         <span className="text-red-400">
                           Invalid quantity. Maximum:{" "}
-                          {listedNFTData.quantity.toString()}
+                          {listedNFTData?.quantity.toString()}
                         </span>
                       ) : (
-                        `Available: ${listedNFTData.quantity.toString()}`
+                        `Available: ${listedNFTData?.quantity.toString()}`
                       )}
                     </p>
                   </div>
@@ -287,7 +291,7 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
                 <div className="bg-black/30 p-4 rounded-lg space-y-3 mb-4">
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">NFT</span>
-                    <span className="font-semibold">{listedNFTData.name}</span>
+                    <span className="font-semibold">{listedNFTData?.name}</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Quantity</span>
@@ -296,7 +300,7 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Price per NFT</span>
                     <span className="font-semibold">
-                      {listedNFTData.price.toString()} SOL
+                      {listedNFTData?.price.toString()} SOL
                     </span>
                   </div>
                   <Separator className="bg-white/10" />

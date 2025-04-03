@@ -22,9 +22,11 @@ export default function SingleNFTDetails({
   vault: string;
   isMyNFT: boolean;
 }) {
-  const [listedNFTData, setListedNFTData] = useListingStore(
-    useShallow((state) => [state.listedNFTData, state.setListedNFTData])
+  const [setListedNFTData] = useListingStore(
+    useShallow((state) => [state.setListedNFTData])
   );
+
+  const [isAnyFieldEmpty, setIsAnyFieldEmpty] = useState(false);
   const { publicKey } = useWallet();
   const wallet = useAnchorWallet();
   const { connection } = useConnection();
@@ -33,7 +35,7 @@ export default function SingleNFTDetails({
     try {
       setLoading(true);
       if (!publicKey || !wallet || !connection) {
-        setLoading(false);
+        console.log("No wallet or connection");
       } else {
         const res = await listedNFT(connection, wallet, publicKey);
 
@@ -50,10 +52,23 @@ export default function SingleNFTDetails({
                   item.price.toString() === price
               );
 
-          if (selectedNFT) {
-            setListedNFTData(selectedNFT);
-            setLoading(false);
-          }
+          setListedNFTData(
+            selectedNFT || {
+              price: "",
+              quantity: "",
+              vaultAccount: "",
+              mint: "",
+              name: "",
+              image: "",
+              symbol: "",
+              offers: [],
+            }
+          );
+
+          setIsAnyFieldEmpty(
+            !selectedNFT ||
+              Object.values(selectedNFT).some((value) => value === "")
+          );
           setLoading(false);
         }
       }
@@ -62,26 +77,17 @@ export default function SingleNFTDetails({
       setLoading(false);
     }
   };
-  const isAnyFieldEmpty = Object.values(listedNFTData).some(
-    (value) => value === ""
-  );
+
   useEffect(() => {
-    if (isAnyFieldEmpty) {
-      listedNft();
-    }
+    listedNft();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicKey, vault, price]);
   return (
     <div className="p-4">
-      <CancelListingModel />
+      <CancelListingModel reFetch={listedNft} />
       <UpdateListingPriceModel />
-      <NFTdetails
-        price={price}
-        vault={vault}
-        isMyNFT={true}
-        loading={loading}
-      />
-      <ActiveOffers />
+      <NFTdetails isMyNFT={true} loading={loading} isEmpty={isAnyFieldEmpty} />
+      <ActiveOffers isLoading={loading} reFetch={listedNft} />
     </div>
   );
 }

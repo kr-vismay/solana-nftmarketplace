@@ -13,7 +13,7 @@ function NoNFTfound() {
         <div className="text-2xl font-bold">NFT Not Found</div>
         {path === "/dashboard" ? (
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/createNFT")}
             className="bg-gradient-to-tr from-light-button-gradient-start to-light-button-gradient-end px-4 py-3 rounded-lg cursor-pointer"
           >
             Create Your NFT

@@ -12,6 +12,7 @@ import { toast } from "react-toastify";
 import { useShallow } from "zustand/shallow";
 import NFTDetailsSkeleton from "./NFTDetailsSkeleton";
 import NoNFTfound from "@/components/Card/NoNFTfound";
+import { useWallet } from "@solana/wallet-adapter-react";
 
 function NFTdetails({
   isMyNFT,
@@ -23,7 +24,7 @@ function NFTdetails({
   isEmpty: boolean;
 }) {
   const { copied, copyToClipboard } = useCopyToClipboard();
-
+  const { publicKey } = useWallet();
   const [
     listedNFTData,
 
@@ -131,18 +132,20 @@ function NFTdetails({
               Update Listing
             </button>
             <button
-              className={`bg-gradient-to-tr from-light-button-gradient-start to-light-button-gradient-end px-4 py-2 rounded-xl cursor-pointer ${
+              className={`bg-gradient-to-tr from-light-button-gradient-start to-light-button-gradient-end px-4 py-2 rounded-xl cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed ${
                 isMyNFT ? "hidden" : "block"
               }`}
               onClick={() => setISOpenBuyModel(true)}
+              disabled={publicKey ? false : true}
             >
               Buy NFT
             </button>
             <button
-              className={`bg-gradient-to-tr from-light-button-gradient-start to-light-button-gradient-end px-4 py-2 rounded-xl cursor-pointer ${
+              className={`bg-gradient-to-tr from-light-button-gradient-start to-light-button-gradient-end px-4 py-2 rounded-xl cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed ${
                 isMyNFT ? "hidden" : "block"
               }`}
               onClick={() => setIsOpenMakeOfferModel(true)}
+              disabled={publicKey ? false : true}
             >
               Make Offer
             </button>

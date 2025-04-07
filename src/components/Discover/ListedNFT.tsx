@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import GeneralListedNFT from "./GeneralListedNFT";
 import {
+  AnchorWallet,
   useAnchorWallet,
   useConnection,
   useWallet,
@@ -10,9 +11,10 @@ import { listedNFT } from "@/utils/listedNFT";
 import { TListedNFT } from "@/types/listedNFT";
 import { useListingStore } from "@/store/Listing";
 import { useShallow } from "zustand/shallow";
-import WalletConnectionWarning from "../Wallet/WalletConnectionWarning";
+
 import NFTCardSkeleton from "../Card/NFTCardSkeleton";
 import NoNFTfound from "../Card/NoNFTfound";
+import { PublicKey } from "@solana/web3.js";
 
 function ListedNFT() {
   const { connection } = useConnection();
@@ -27,15 +29,18 @@ function ListedNFT() {
 
   const listedNft = async () => {
     try {
-      if (!publicKey || !wallet || !connection) {
-      } else {
-        const res = await listedNFT(connection, wallet, publicKey);
+      setLoading(true);
+      const res = await listedNFT(
+        connection,
+        wallet as AnchorWallet,
+        publicKey as PublicKey
+      );
 
-        if (res?.success) {
-          setGeneralNFT(res?.filteredNFTsForGeneralUser);
-          setLoading(false);
-        }
+      if (res?.success) {
+        setGeneralNFT(res?.filteredNFTsForGeneralUser);
+        setLoading(false);
       }
+      setLoading(false);
     } catch (error) {
       console.log("🚀 ~ listedNft ~ error:", error);
       setLoading(false);
@@ -45,33 +50,29 @@ function ListedNFT() {
     listedNft();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [publicKey, isOpenBuyModel, isOpenCancelModel]);
-  return publicKey ? (
-    loading ? (
-      <div className="grid md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-8 py-3 mt-5">
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-        <NFTCardSkeleton />
-      </div>
-    ) : (
-      <div className="flex flex-col gap-5 mt-5">
-        {generalNFT && generalNFT.length <= 0 ? (
-          <NoNFTfound />
-        ) : (
-          <GeneralListedNFT nft={generalNFT} />
-        )}
-      </div>
-    )
+  return loading ? (
+    <div className="grid md:grid-cols-3 sm:grid-cols-2 lg:grid-cols-4 grid-cols-1 gap-8 py-3 mt-5">
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+      <NFTCardSkeleton />
+    </div>
   ) : (
-    <WalletConnectionWarning />
+    <div className="flex flex-col gap-5 mt-5">
+      {generalNFT && generalNFT.length <= 0 ? (
+        <NoNFTfound />
+      ) : (
+        <GeneralListedNFT nft={generalNFT} />
+      )}
+    </div>
   );
 }
 

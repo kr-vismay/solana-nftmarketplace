@@ -299,9 +299,7 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Price per NFT</span>
-                    <span className="font-semibold">
-                      {listedNFTData?.price.toString()} SOL
-                    </span>
+                    <span className="font-semibold">{price} SOL</span>
                   </div>
                   <Separator className="bg-white/10" />
                   <div className="flex justify-between items-center">

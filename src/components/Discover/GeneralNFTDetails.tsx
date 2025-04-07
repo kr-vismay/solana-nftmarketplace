@@ -7,12 +7,14 @@ import UserOffer from "./UserOffer";
 import { useShallow } from "zustand/shallow";
 import { useListingStore } from "@/store/Listing";
 import {
+  AnchorWallet,
   useAnchorWallet,
   useConnection,
   useWallet,
 } from "@solana/wallet-adapter-react";
 import { listedNFT } from "@/utils/listedNFT";
-import WalletConnectionWarning from "../Wallet/WalletConnectionWarning";
+
+import { PublicKey } from "@solana/web3.js";
 
 function GeneralNFTDetails({
   price,
@@ -37,42 +39,43 @@ function GeneralNFTDetails({
   const listedNft = async () => {
     try {
       setLoading(true);
-      if (!publicKey || !wallet || !connection) {
-        console.log("No wallet or connection");
-      } else {
-        const res = await listedNFT(connection, wallet, publicKey);
 
-        if (res?.success) {
-          const selectedNFT = isMyNFT
-            ? res.filteredNFTsForSpecificUser.find(
-                (item) =>
-                  item.vaultAccount.toString() === vault &&
-                  item.price.toString() === price
-              )
-            : res.filteredNFTsForGeneralUser.find(
-                (item) =>
-                  item.vaultAccount.toString() === vault &&
-                  item.price.toString() === price
-              );
+      const res = await listedNFT(
+        connection,
+        wallet as AnchorWallet,
+        publicKey as PublicKey
+      );
 
-          setListedNFTData(
-            selectedNFT || {
-              price: "",
-              quantity: "",
-              vaultAccount: "",
-              mint: "",
-              name: "",
-              image: "",
-              symbol: "",
-              offers: [],
-            }
-          );
+      if (res?.success) {
+        const selectedNFT = isMyNFT
+          ? res.filteredNFTsForSpecificUser.find(
+              (item) =>
+                item.vaultAccount.toString() === vault &&
+                item.price.toString() === price
+            )
+          : res.filteredNFTsForGeneralUser.find(
+              (item) =>
+                item.vaultAccount.toString() === vault &&
+                item.price.toString() === price
+            );
 
-          setIsAnyFieldEmpty(
-            !selectedNFT ||
-              Object.values(selectedNFT).some((value) => value === "")
-          );
-        }
+        setListedNFTData(
+          selectedNFT || {
+            price: "",
+            quantity: "",
+            vaultAccount: "",
+            mint: "",
+            name: "",
+            image: "",
+            symbol: "",
+            offers: [],
+          }
+        );
+
+        setIsAnyFieldEmpty(
+          !selectedNFT ||
+            Object.values(selectedNFT).some((value) => value === "")
+        );
       }
     } catch (error) {
       console.log("🚀 ~ listedNft ~ error:", error);
@@ -89,20 +92,10 @@ function GeneralNFTDetails({
 
   return (
     <div className="p-4">
-      {!publicKey ? (
-        <WalletConnectionWarning />
-      ) : (
-        <>
-          <BuyNFTModel reFetch={listedNft} />
-          <MakeOfferModel reFetch={listedNft} />
-          <NFTdetails
-            isMyNFT={false}
-            loading={loading}
-            isEmpty={isAnyFieldEmpty}
-          />
-          <UserOffer reFetch={listedNft} isLoading={loading} />
-        </>
-      )}
+      <BuyNFTModel reFetch={listedNft} />
+      <MakeOfferModel reFetch={listedNft} />
+      <NFTdetails isMyNFT={false} loading={loading} isEmpty={isAnyFieldEmpty} />
+      <UserOffer reFetch={listedNft} isLoading={loading} />
     </div>
   );
 }

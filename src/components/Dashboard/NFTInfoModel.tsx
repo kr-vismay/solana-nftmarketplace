@@ -371,7 +371,7 @@ function NFTInfoModal({ refetch }: { refetch: () => void }) {
                   variant="outline"
                   disabled={loading}
                   className="flex-1 border-white/20 bg-outline-button-background hover:bg-outline-button-background hover:text-white text-white hover:cursor-pointer"
-                  onClick={() => setStep(1)}
+                  onClick={() => setStep(2)}
                 >
                   Back
                 </Button>

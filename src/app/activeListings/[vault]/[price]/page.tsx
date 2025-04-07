@@ -5,7 +5,11 @@ import React from "react";
 function page({ params }: { params: any }) {
   const { price, vault } = params;
 
-  return <SingleNFTDetails price={price} vault={vault} isMyNFT={true} />;
+  return (
+    <div className="max-w-[1440px] mx-auto px-4 pb-4">
+      <SingleNFTDetails price={price} vault={vault} isMyNFT={true} />;
+    </div>
+  );
 }
 
 export default page;

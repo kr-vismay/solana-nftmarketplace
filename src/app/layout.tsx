@@ -33,7 +33,7 @@ export default function RootLayout({
           <div className="sticky top-0 w-full backdrop-blur-3xl p-4 z-50 border-b-2 border-white/10 bg-navbar-background/60 ">
             <Navbar />
           </div>
-          <div className="max-w-[1440px] mx-auto px-4 pb-4">{children}</div>
+          <div>{children}</div>
         </WalletConnectProvider>
       </body>
     </html>

@@ -28,9 +28,11 @@ export const listedNFT = async (
       const filteredNFTs = data
         .filter(
           (item) =>
-            item.account.authority.equals(publicKey) === isOwner &&
-            Array.isArray(item.account.nfts) &&
-            item.account.nfts.length > 0
+            publicKey
+              ? item.account.authority.equals(publicKey) === isOwner &&
+                Array.isArray(item.account.nfts) &&
+                item.account.nfts.length > 0
+              : Array.isArray(item.account.nfts) && item.account.nfts.length > 0 // If no publicKey, include all NFTs
         )
         .flatMap((item) =>
           item.account.nfts.map((nft) => ({
@@ -40,7 +42,6 @@ export const listedNFT = async (
           }))
         );
 
-      // Fetch metadata for all NFTs concurrently
       return Promise.all(
         filteredNFTs.map(async (nft) => {
           const metadata = await getNFTMetaData(new PublicKey(nft.mint));

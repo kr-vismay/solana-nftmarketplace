@@ -73,7 +73,7 @@ export const sellNft = async (
       await provider.sendAndConfirm(transaction);
     }
     const tx = await program.methods
-      .sellNft(new BN(quantity), new BN(price))
+      .sellNft(new BN(quantity), new BN(Number(price) * 1000000000))
       .accounts({
         signer: publicKey,
         config: pda,

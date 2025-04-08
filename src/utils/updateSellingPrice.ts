@@ -37,7 +37,7 @@ export const updateSellingPrice = async (
     );
 
     const tx = await program.methods
-      .updatePrice(new BN(old_price), new BN(new_price))
+      .updatePrice(new BN(old_price), new BN(Number(new_price) * 1000000000))
       .accounts({
         vaultTokenAccount: vaultTokenAccount,
         owner: publicKey,

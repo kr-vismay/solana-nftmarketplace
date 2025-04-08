@@ -86,7 +86,7 @@ function NFTdetails({
             <div className="flex flex-col gap-2 rounded-xl bg-selected-content p-4 flex-1">
               <span className="font-bold text-lg">Price per NFT</span>
               <span className="text-white/50">
-                {listedNFTData.price.toString()} SOL
+                {Number(listedNFTData.price) / 1000000000} SOL
               </span>
             </div>
           </div>

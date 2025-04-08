@@ -73,7 +73,7 @@ export const makeOffer = async (
 
     const tx = await program.methods
       .makeOffer(
-        new BN(Number(offerPrice)),
+        new BN(Number(offerPrice) * 1000000000),
         new BN(Number(quantity)),
         new BN(Number(originalPrice))
       )

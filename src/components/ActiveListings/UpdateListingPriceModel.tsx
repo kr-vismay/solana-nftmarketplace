@@ -59,7 +59,11 @@ function UpdateListingPriceModel() {
   const router = useRouter();
   useEffect(() => {
     setQuantity(listedNFTData ? listedNFTData.quantity.toString() : "0");
-    setPrice(listedNFTData ? listedNFTData.price.toString() : "0");
+    setPrice(
+      listedNFTData
+        ? (Number(listedNFTData.price) / 1000000000).toString()
+        : "0"
+    );
     setTotalPrice("0");
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpenUpdatePriceModel]);
@@ -99,7 +103,7 @@ function UpdateListingPriceModel() {
           publicKey,
           new PublicKey(listedNFTData.vaultAccount.toString()),
           listedNFTData.pda,
-          listedNFTData.price,
+          listedNFTData.price.toString(),
           price
         );
         if (res.success) {
@@ -107,7 +111,11 @@ function UpdateListingPriceModel() {
           setListedNFTData({ ...listedNFTData, price: price });
           setIsOpenUpdatePriceModel(false);
           setLoading(false);
-          router.push(`/activeListings/${listedNFTData.vaultAccount}/${price}`);
+          router.push(
+            `/activeListings/${listedNFTData.vaultAccount}/${
+              Number(price) * 1000000000
+            }`
+          );
         } else {
           setIsOpenUpdatePriceModel(false);
           setLoading(false);

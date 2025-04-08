@@ -18,7 +18,6 @@ import {
   CheckCircle2,
   Loader,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 
 import { useListingStore } from "@/store/Listing";
 
@@ -45,56 +44,31 @@ function CancelListingModel({ reFetch }: { reFetch: () => void }) {
       ])
     );
   const [loading, setLoading] = useState(false);
-  const [quantity, setQuantity] = useState("1");
+
   const [totalPrice, setTotalPrice] = useState("0");
-  const [isValidQuantity, setIsValidQuantity] = useState(true);
-  const [isValidPrice, setIsValidPrice] = useState(true);
+
   const [step, setStep] = useState(1);
+
   const { publicKey } = useWallet();
   const { connection } = useConnection();
   const wallet = useAnchorWallet();
   useEffect(() => {
-    setQuantity(listedNFTData ? listedNFTData.quantity.toString() : "0");
     setTotalPrice("0");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpenCancelModel]);
 
   useEffect(() => {
-    const qtyNum = Number.parseFloat(quantity) || 0;
+    const qtyNum =
+      Number.parseFloat(listedNFTData ? listedNFTData.quantity : "0") || 0;
     const priceNum =
       Number.parseFloat(listedNFTData ? listedNFTData.price.toString() : "0") ||
       0;
-    setTotalPrice((qtyNum * priceNum).toFixed(4));
+    setTotalPrice(((qtyNum * priceNum) / 1000000000).toFixed(4));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [quantity, isOpenCancelModel]);
-
-  useEffect(() => {
-    const qtyNum = Number.parseFloat(quantity) || 0;
-    setIsValidQuantity(
-      qtyNum > 0 &&
-        qtyNum <=
-          (Number(listedNFTData ? listedNFTData.quantity.toString() : "0") || 0)
-    );
-  }, [quantity, listedNFTData]);
-
-  useEffect(() => {
-    const priceNum =
-      Number.parseFloat(listedNFTData ? listedNFTData.price.toString() : "0") ||
-      0;
-    setIsValidPrice(priceNum > 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listedNFTData?.price]);
-
-  const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    if (value === "" || /^\d*\.?\d*$/.test(value)) {
-      setQuantity(value);
-    }
-  };
+  }, [listedNFTData?.quantity, isOpenCancelModel]);
 
   const handleCancelListing = async () => {
     setLoading(true);
-    if (step === 1 && isValidQuantity && isValidPrice) {
+    if (step === 1) {
       setStep(2);
       setLoading(false);
     } else if (step === 2) {
@@ -216,11 +190,8 @@ function CancelListingModel({ reFetch }: { reFetch: () => void }) {
                         id="quantity"
                         disabled={true}
                         type="text"
-                        value={quantity}
-                        onChange={handleQuantityChange}
-                        className={`input-box disabled:opacity-100 ${
-                          !isValidQuantity && "error-input-box"
-                        }`}
+                        value={listedNFTData?.quantity.toString()}
+                        className={`input-box disabled:opacity-100 `}
                         placeholder="Enter quantity"
                       />
                     </div>
@@ -239,10 +210,10 @@ function CancelListingModel({ reFetch }: { reFetch: () => void }) {
                         id="price"
                         disabled={true}
                         type="text"
-                        value={listedNFTData?.price.toString()}
-                        className={`input-box disabled:opacity-100 ${
-                          !isValidPrice && "error-input-box"
-                        }`}
+                        value={(
+                          Number(listedNFTData?.price) / 1000000000
+                        ).toString()}
+                        className={`input-box disabled:opacity-100 `}
                         placeholder="Enter price in SOL"
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
@@ -283,12 +254,15 @@ function CancelListingModel({ reFetch }: { reFetch: () => void }) {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Quantity</span>
-                    <span className="font-semibold">{quantity}</span>
+                    <span className="font-semibold">
+                      {listedNFTData?.quantity.toString()}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Price per NFT</span>
                     <span className="font-semibold">
-                      {listedNFTData?.price.toString()} SOL
+                      {(Number(listedNFTData?.price) / 1000000000).toString()}{" "}
+                      SOL
                     </span>
                   </div>
                   <Separator className="bg-white/10" />
@@ -321,12 +295,8 @@ function CancelListingModel({ reFetch }: { reFetch: () => void }) {
                 </Button>
               )}
               <Button
-                className={cn(
-                  "flex-1 bg-gradient-to-r from-light-button-gradient-start to-light-button-gradient-end hover:opacity-90 transition-all hover:cursor-pointer ",
-                  (!isValidQuantity || !isValidPrice) &&
-                    "opacity-50 cursor-not-allowed disabled:hover:cursor-not-allowed"
-                )}
-                disabled={!isValidQuantity || !isValidPrice || loading}
+                className="flex-1 bg-gradient-to-r from-light-button-gradient-start to-light-button-gradient-end hover:opacity-90 transition-all hover:cursor-pointer "
+                disabled={loading}
                 onClick={handleCancelListing}
               >
                 {step === 1 ? (

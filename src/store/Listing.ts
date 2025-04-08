@@ -59,4 +59,4 @@ export const useListingStore = create<
   )
 );
 
-useListingStore.subscribe((state) => console.log(state));
+// useListingStore.subscribe((state) => console.log(state));

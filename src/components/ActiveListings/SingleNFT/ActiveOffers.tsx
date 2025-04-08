@@ -148,7 +148,7 @@ function ActiveOffers({
                           Price
                         </div>
                         <div className="text-sm font-semibold text-white/40">
-                          {offer.price.toString()} SOL
+                          {(Number(offer.price) / 1000000000).toString()} SOL
                         </div>
                       </div>
                       <div className="space-y-1">

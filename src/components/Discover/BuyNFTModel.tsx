@@ -42,7 +42,7 @@ function BuyNFTModel({ reFetch }: { reFetch: () => void }) {
   const [quantity, setQuantity] = useState("1");
   const [totalPrice, setTotalPrice] = useState("0");
   const [isValidQuantity, setIsValidQuantity] = useState(true);
-  const [isValidPrice, setIsValidPrice] = useState(true);
+
   const [step, setStep] = useState(1);
   const { publicKey } = useWallet();
   const { connection } = useConnection();
@@ -56,8 +56,11 @@ function BuyNFTModel({ reFetch }: { reFetch: () => void }) {
   useEffect(() => {
     const qtyNum = Number.parseFloat(quantity) || 0;
     const priceNum =
-      Number.parseFloat(listedNFTData ? listedNFTData.price.toString() : "0") ||
-      0;
+      Number.parseFloat(
+        listedNFTData
+          ? (Number(listedNFTData.price) / 1000000000).toString()
+          : "0"
+      ) || 0;
     setTotalPrice((qtyNum * priceNum).toFixed(4));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [quantity, isOpenBuyModel]);
@@ -71,14 +74,6 @@ function BuyNFTModel({ reFetch }: { reFetch: () => void }) {
     );
   }, [quantity, listedNFTData]);
 
-  useEffect(() => {
-    const priceNum =
-      Number.parseFloat(listedNFTData ? listedNFTData.price.toString() : "0") ||
-      0;
-    setIsValidPrice(priceNum > 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listedNFTData?.price]);
-
   const handleQuantityChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
@@ -88,7 +83,7 @@ function BuyNFTModel({ reFetch }: { reFetch: () => void }) {
 
   const handleBuyNFT = async () => {
     setLoading(true);
-    if (step === 1 && isValidQuantity && isValidPrice) {
+    if (step === 1 && isValidQuantity) {
       setStep(2);
       setLoading(false);
     } else if (step === 2) {
@@ -240,21 +235,16 @@ function BuyNFTModel({ reFetch }: { reFetch: () => void }) {
                         id="price"
                         disabled={true}
                         type="text"
-                        value={listedNFTData?.price.toString()}
-                        className={`input-box disabled:opacity-100 ${
-                          !isValidPrice && "error-input-box"
-                        }`}
+                        value={(
+                          Number(listedNFTData?.price) / 1000000000
+                        ).toString()}
+                        className={`input-box disabled:opacity-100 `}
                         placeholder="Enter price in SOL"
                       />
                       <div className="absolute right-3 top-1/2 -translate-y-1/2 text-white/60">
                         SOL
                       </div>
                     </div>
-                    {!isValidPrice && (
-                      <p className="text-xs text-red-400">
-                        Please enter a valid price greater than 0
-                      </p>
-                    )}
                   </div>
 
                   <Separator className="bg-white/10 my-4" />
@@ -294,7 +284,7 @@ function BuyNFTModel({ reFetch }: { reFetch: () => void }) {
                   <div className="flex justify-between items-center">
                     <span className="text-white/80">Price per NFT</span>
                     <span className="font-semibold">
-                      {listedNFTData?.price.toString()} SOL
+                      {Number(listedNFTData?.price) / 1000000000} SOL
                     </span>
                   </div>
                   <Separator className="bg-white/10" />
@@ -328,10 +318,10 @@ function BuyNFTModel({ reFetch }: { reFetch: () => void }) {
               <Button
                 className={cn(
                   "flex-1 bg-gradient-to-r from-light-button-gradient-start to-light-button-gradient-end hover:opacity-90 transition-all hover:cursor-pointer ",
-                  (!isValidQuantity || !isValidPrice) &&
+                  !isValidQuantity &&
                     "opacity-50 cursor-not-allowed disabled:hover:cursor-not-allowed"
                 )}
-                disabled={!isValidQuantity || !isValidPrice || loading}
+                disabled={!isValidQuantity || loading}
                 onClick={handleBuyNFT}
               >
                 {step === 1 ? (

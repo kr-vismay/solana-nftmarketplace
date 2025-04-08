@@ -122,7 +122,6 @@ function MakeOfferModel({ reFetch }: { reFetch: () => void }) {
           reFetch
         );
         setStep(1);
-
         setIsOpenMakeOfferModel(false);
         setLoading(false);
       } catch (error) {
